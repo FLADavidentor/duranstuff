@@ -1,0 +1,186 @@
+{
+  "info": {
+    "name": "Catalogo de Productos - Taller 1 Servicios Web",
+    "description": "Pruebas tecnicas de la API REST de catalogo de productos de Cafe Soluble S.A. (caso academico ficticio). Los seis escenarios corresponden a la matriz de pruebas de la Fase 4 del enunciado. Ejecutar en orden: la prueba 6 depende de que la 5 haya registrado un producto. La aplicacion debe estar corriendo en http://localhost:8080.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "idExistente", "value": "3", "type": "string" },
+    { "key": "idInexistente", "value": "999", "type": "string" },
+    { "key": "totalInicial", "value": "8", "type": "string" },
+    { "key": "idCreado", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Consultar la coleccion completa",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/api/productos", "host": [ "{{baseUrl}}" ], "path": [ "api", "productos" ] },
+        "description": "Objetivo: comprobar que la URI de coleccion devuelve todos los productos en JSON con codigo 200."
+      },
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('Codigo HTTP 200 OK', function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "pm.test('El Content-Type es application/json', function () {",
+          "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+          "});",
+          "var cuerpo = pm.response.json();",
+          "pm.test('La respuesta es un arreglo JSON', function () {",
+          "    pm.expect(cuerpo).to.be.an('array');",
+          "});",
+          "pm.test('Contiene los ocho productos cargados en memoria', function () {",
+          "    pm.expect(cuerpo.length).to.eql(Number(pm.collectionVariables.get('totalInicial')));",
+          "});",
+          "pm.test('Cada producto expone los cinco atributos del recurso', function () {",
+          "    cuerpo.forEach(function (p) {",
+          "        pm.expect(p).to.have.all.keys('id', 'nombre', 'presentacion', 'categoria', 'disponible');",
+          "    });",
+          "});"
+        ] } }
+      ]
+    },
+    {
+      "name": "2. Consultar un ID existente",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/api/productos/{{idExistente}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "productos", "{{idExistente}}" ] },
+        "description": "Objetivo: comprobar que la URI de recurso individual devuelve exactamente un objeto y no un arreglo."
+      },
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('Codigo HTTP 200 OK', function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "var cuerpo = pm.response.json();",
+          "pm.test('La respuesta es un unico objeto, no un arreglo', function () {",
+          "    pm.expect(cuerpo).to.be.an('object');",
+          "    pm.expect(cuerpo).to.not.be.an('array');",
+          "});",
+          "pm.test('El objeto expone los cinco atributos del recurso', function () {",
+          "    pm.expect(cuerpo).to.have.all.keys('id', 'nombre', 'presentacion', 'categoria', 'disponible');",
+          "});"
+        ] } }
+      ]
+    },
+    {
+      "name": "3. Consultar el primer ID existente",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/api/productos/1", "host": [ "{{baseUrl}}" ], "path": [ "api", "productos", "1" ] },
+        "description": "Objetivo: comprobar que la variable de ruta se interpreta correctamente, es decir, que la respuesta corresponde al recurso solicitado y no a otro."
+      },
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('Codigo HTTP 200 OK', function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "var cuerpo = pm.response.json();",
+          "pm.test('El id devuelto coincide con el id pedido en la URI', function () {",
+          "    pm.expect(cuerpo.id).to.eql(1);",
+          "});",
+          "pm.test('El nombre no viene vacio', function () {",
+          "    pm.expect(cuerpo.nombre).to.be.a('string').and.to.have.length.above(0);",
+          "});"
+        ] } }
+      ]
+    },
+    {
+      "name": "4. Consultar un ID inexistente",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/api/productos/{{idInexistente}}", "host": [ "{{baseUrl}}" ], "path": [ "api", "productos", "{{idInexistente}}" ] },
+        "description": "Objetivo: comprobar que un recurso inexistente produce un codigo HTTP coherente (404) y no un 200 vacio ni un 500."
+      },
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('Codigo HTTP 404 Not Found', function () {",
+          "    pm.response.to.have.status(404);",
+          "});",
+          "pm.test('No es un error del servidor (5xx)', function () {",
+          "    pm.expect(pm.response.code).to.be.below(500);",
+          "});",
+          "pm.test('No devuelve una representacion de producto', function () {",
+          "    var cuerpo = pm.response.json();",
+          "    pm.expect(cuerpo).to.not.have.property('presentacion');",
+          "});"
+        ] } }
+      ]
+    },
+    {
+      "name": "5. Registrar un producto valido",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Cafe Soluble Selecto\",\n  \"presentacion\": \"100 g\",\n  \"categoria\": \"Linea premium\",\n  \"disponible\": true\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{baseUrl}}/api/productos", "host": [ "{{baseUrl}}" ], "path": [ "api", "productos" ] },
+        "description": "Objetivo: comprobar que la API recibe un producto en JSON, lo registra y comunica la creacion con 201 y la cabecera Location."
+      },
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('Codigo HTTP 201 Created', function () {",
+          "    pm.response.to.have.status(201);",
+          "});",
+          "pm.test('Incluye la cabecera Location', function () {",
+          "    pm.expect(pm.response.headers.has('Location')).to.be.true;",
+          "});",
+          "var cuerpo = pm.response.json();",
+          "pm.test('El recurso creado trae un id asignado por el servidor', function () {",
+          "    pm.expect(cuerpo.id).to.be.a('number');",
+          "    pm.expect(cuerpo.id).to.be.above(0);",
+          "});",
+          "pm.test('Los datos enviados se conservan', function () {",
+          "    pm.expect(cuerpo.nombre).to.eql('Cafe Soluble Selecto');",
+          "    pm.expect(cuerpo.presentacion).to.eql('100 g');",
+          "    pm.expect(cuerpo.categoria).to.eql('Linea premium');",
+          "    pm.expect(cuerpo.disponible).to.eql(true);",
+          "});",
+          "pm.test('La cabecera Location apunta al id del recurso creado', function () {",
+          "    pm.expect(pm.response.headers.get('Location')).to.include('/api/productos/' + cuerpo.id);",
+          "});",
+          "pm.collectionVariables.set('idCreado', String(cuerpo.id));"
+        ] } }
+      ]
+    },
+    {
+      "name": "6. Consultar nuevamente la coleccion",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/api/productos", "host": [ "{{baseUrl}}" ], "path": [ "api", "productos" ] },
+        "description": "Objetivo: comprobar que el producto registrado en la prueba 5 forma parte de la coleccion, es decir, que el POST modifico el estado del servidor."
+      },
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('Codigo HTTP 200 OK', function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "var cuerpo = pm.response.json();",
+          "var esperado = Number(pm.collectionVariables.get('totalInicial')) + 1;",
+          "pm.test('La coleccion crecio en un elemento', function () {",
+          "    pm.expect(cuerpo.length).to.eql(esperado);",
+          "});",
+          "pm.test('El producto registrado aparece en la coleccion', function () {",
+          "    var idCreado = Number(pm.collectionVariables.get('idCreado'));",
+          "    var encontrado = cuerpo.filter(function (p) { return p.id === idCreado; });",
+          "    pm.expect(encontrado.length).to.eql(1);",
+          "    pm.expect(encontrado[0].nombre).to.eql('Cafe Soluble Selecto');",
+          "});"
+        ] } }
+      ]
+    }
+  ]
+}
