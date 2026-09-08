@@ -1,0 +1,116 @@
+<mxfile host="app.diagrams.net" version="24.7.17">
+  <diagram id="taller1-arquitectura" name="Arquitectura Taller 1">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="titulo" value="Taller #1 — API de catálogo de productos (Café Soluble S.A., caso ficticio)&#10;Recorrido de una petición HTTP a través de la aplicación Spring Boot" style="text;html=1;align=center;verticalAlign=middle;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="10" width="900" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ================= RECORRIDO A: CONSULTA EXITOSA ================= -->
+        <mxCell id="tituloA" value="RECORRIDO A — Consulta exitosa:  GET /api/productos/3  →  200 OK" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;fontStyle=1;fontColor=#2D7600;" vertex="1" parent="1">
+          <mxGeometry x="30" y="75" width="600" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="contA" value="Aplicación Spring Boot — Tomcat embebido, puerto 8080" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="110" width="700" height="255" as="geometry" />
+        </mxCell>
+
+        <mxCell id="postmanA" value="Cliente / Postman" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="180" width="150" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dispA" value="DispatcherServlet&#10;&#10;&lt;i&gt;front controller&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="250" y="180" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ctrlA" value="ProductoControlador&#10;@GetMapping(&quot;/{id}&quot;)&#10;consultarPorId(3)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="450" y="180" width="190" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="almA" value="AlmacenProductos&#10;&lt;i&gt;8 productos en memoria&lt;/i&gt;" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=12;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="700" y="170" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="jackA" value="Jackson&#10;Producto → JSON" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="450" y="290" width="190" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a1" value="1  GET /api/productos/3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2D7600;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="postmanA" target="dispA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" value="2  enruta según ruta y método" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2D7600;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="dispA" target="ctrlA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" value="3  buscarPorId(3)" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2D7600;strokeWidth=2;fontSize=10;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="ctrlA" target="almA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" value="4  Optional CON el Producto" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2D7600;strokeWidth=2;fontSize=10;dashed=1;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="almA" target="ctrlA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" value="5  objeto Java Producto" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2D7600;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="ctrlA" target="jackA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a6" value="6  HTTP Response&#10;200 OK + cuerpo JSON del producto" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#2D7600;strokeWidth=3;fontSize=10;fontStyle=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="jackA" target="postmanA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================= RECORRIDO B: RECURSO INEXISTENTE ================= -->
+        <mxCell id="tituloB" value="RECORRIDO B — Producto inexistente:  GET /api/productos/999  →  404 Not Found" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;fontStyle=1;fontColor=#B85450;" vertex="1" parent="1">
+          <mxGeometry x="30" y="400" width="600" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="contB" value="Aplicación Spring Boot — Tomcat embebido, puerto 8080" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="435" width="700" height="255" as="geometry" />
+        </mxCell>
+
+        <mxCell id="postmanB" value="Cliente / Postman" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="505" width="150" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dispB" value="DispatcherServlet&#10;&#10;&lt;i&gt;front controller&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="250" y="505" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ctrlB" value="ProductoControlador&#10;@GetMapping(&quot;/{id}&quot;)&#10;consultarPorId(999)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="450" y="505" width="190" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="almB" value="AlmacenProductos&#10;&lt;i&gt;8 productos en memoria&lt;/i&gt;" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=12;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="700" y="495" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="handB" value="ManejadorDeErrores&#10;@RestControllerAdvice" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="450" y="615" width="190" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="b1" value="1  GET /api/productos/999" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#B85450;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="postmanB" target="dispB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b2" value="2  enruta según ruta y método&#10;(idéntico al recorrido A)" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#B85450;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="dispB" target="ctrlB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b3" value="3  buscarPorId(999)" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#B85450;strokeWidth=2;fontSize=10;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="ctrlB" target="almB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b4" value="4  Optional VACÍO&#10;(aquí se separan los recorridos)" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#B85450;strokeWidth=2;fontSize=10;fontStyle=1;dashed=1;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="almB" target="ctrlB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b5" value="5  lanza ProductoNoEncontradoException&#10;(nunca se invoca a Jackson sobre un Producto)" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#B85450;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="ctrlB" target="handB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b6" value="6  HTTP Response&#10;404 Not Found + JSON de error" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#B85450;strokeWidth=3;fontSize=10;fontStyle=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="handB" target="postmanB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================= NOTA COMPARATIVA ================= -->
+        <mxCell id="nota" value="&lt;b&gt;Qué cambia entre los dos recorridos&lt;/b&gt;&#10;&#10;Los pasos 1, 2 y 3 son IDÉNTICOS: la petición está bien formada, el DispatcherServlet la enruta al mismo método del mismo controlador y el controlador consulta el mismo almacén. La ruta y el método HTTP no cambian.&#10;&#10;La bifurcación ocurre en el paso 4, según el Optional que devuelve el almacén:&#10;• CON valor  → el objeto Java se entrega a Jackson, que lo serializa a JSON, y se responde 200 OK.&#10;• VACÍO      → se lanza ProductoNoEncontradoException, que el ManejadorDeErrores traduce a 404 Not Found.&#10;&#10;Sin ese manejador la excepción llegaría sin controlar al contenedor y la API respondería 500, que significa &quot;el servidor falló&quot;. Pedir un recurso que no existe no es un fallo del servidor: es una petición válida sobre un recurso ausente, y eso se comunica con 404." style="shape=note;whiteSpace=wrap;html=1;size=18;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="30" y="710" width="890" height="230" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
