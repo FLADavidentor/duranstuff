@@ -5,25 +5,25 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
-@Table(name = "students")
-@Getter
-@Setter
+@Table(name = "instrumentos")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Student {
+public class Instrumento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String firstName;
-    private String lastName;
-    private String email;
-    private int age;
+    private String nombre;
+    private String descripcion;
+    private Integer numeroPreguntas;
+    private Integer duracionMinutos;
+    private BigDecimal puntajeMaximo;
 }
