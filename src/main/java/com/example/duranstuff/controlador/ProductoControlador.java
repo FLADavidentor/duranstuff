@@ -1,10 +1,13 @@
 package com.example.duranstuff.controlador;
 
+import java.net.URI;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,5 +35,12 @@ public class ProductoControlador {
         Producto producto = almacen.buscarPorId(id)
                 .orElseThrow(() -> new ProductoNoEncontradoException(id));
         return ResponseEntity.ok(producto);
+    }
+
+    @PostMapping
+    public ResponseEntity<Producto> registrar(@RequestBody Producto producto) {
+        Producto creado = almacen.registrar(producto);
+        URI ubicacion = URI.create("/api/productos/" + creado.getId());
+        return ResponseEntity.created(ubicacion).body(creado);
     }
 }
