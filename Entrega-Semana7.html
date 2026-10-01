@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Persistencia y relaciones con Spring Data JPA</title>
+<style>
+  :root {
+    --tinta: #1a1a1a;
+    --suave: #5a5f66;
+    --linea: #d8dce2;
+    --fondo: #ffffff;
+    --panel: #f6f7f9;
+    --codigo: #f2f4f7;
+    --acento: #1d4ed8;
+    --exito: #0f7a3d;
+    --falla: #b3261e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto; padding: 48px 24px 96px; max-width: 880px;
+    font: 16px/1.65 "Segoe UI", system-ui, sans-serif;
+    color: var(--tinta); background: var(--fondo);
+  }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 4px; }
+  h2 {
+    font-size: 1.3rem; margin: 56px 0 16px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--linea);
+  }
+  h3 { font-size: 1.05rem; margin: 32px 0 10px; }
+  p, li { margin: 0 0 12px; }
+  code, pre { font-family: Consolas, "Cascadia Mono", monospace; }
+  code { background: var(--codigo); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+  pre {
+    background: var(--codigo); border: 1px solid var(--linea); border-left: 3px solid var(--acento);
+    padding: 14px 16px; overflow-x: auto; border-radius: 4px;
+    font-size: 0.84rem; line-height: 1.5; margin: 0 0 16px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .portada {
+    border: 1px solid var(--linea); border-radius: 6px;
+    padding: 28px 32px; background: var(--panel); margin-bottom: 8px;
+  }
+  .portada dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 20px; margin: 20px 0 0; }
+  .portada dt { color: var(--suave); }
+  .portada dd { margin: 0; }
+  .pendiente { background: #fff3cd; border: 1px dashed #b8860b; padding: 2px 8px; border-radius: 3px; }
+  figure { margin: 20px 0 28px; }
+  video {
+    width: 100%; max-width: 820px; display: block;
+    border: 1px solid var(--linea); border-radius: 5px; background: #000;
+  }
+  figcaption { font-size: 0.86rem; color: var(--suave); margin-top: 8px; }
+  figcaption b { color: var(--tinta); }
+  .faltante {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 170px; border: 2px dashed var(--linea); border-radius: 5px;
+    color: var(--suave); font-size: 0.9rem; background: var(--panel); text-align: center; padding: 20px;
+  }
+  table { border-collapse: collapse; width: 100%; margin: 0 0 20px; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--linea); padding: 8px 11px; text-align: left; vertical-align: top; }
+  th { background: var(--panel); font-weight: 600; }
+  .hizo { color: var(--exito); font-weight: 600; }
+  .evito { color: var(--falla); font-weight: 600; }
+  .nota {
+    border-left: 3px solid var(--acento); background: var(--panel);
+    padding: 12px 16px; margin: 0 0 20px; font-size: 0.93rem;
+  }
+  ol.preguntas { padding-left: 24px; }
+  ol.preguntas > li { margin-bottom: 20px; }
+  ol.preguntas > li > strong { display: block; margin-bottom: 4px; }
+  @media print {
+    body { padding: 0; max-width: none; font-size: 11pt; }
+    h2 { page-break-after: avoid; }
+    figure, pre, table { page-break-inside: avoid; }
+    video { display: none; }
+    .faltante { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="portada">
+  <h1>Persistencia y relaciones con Spring Data JPA</h1>
+  <p style="color:var(--suave); margin:0">Práctica guiada · Documento de entrega</p>
+  <dl>
+    <dt>Asignatura</dt><dd>Servicios Web</dd>
+    <dt>Unidad</dt><dd>Unidad II. Desarrollo de Servicios Web con SpringBoot</dd>
+    <dt>Carrera</dt><dd>Ingeniería en Sistemas de Información</dd>
+    <dt>Estudiante</dt><dd><span class="pendiente">[nombre del estudiante]</span></dd>
+    <dt>Carné</dt><dd><span class="pendiente">[número de carné]</span></dd>
+    <dt>Proyecto</dt><dd><code>gestion-productos</code> (Maven, Java 21, grupo <code>ni.edu.uam</code>)</dd>
+    <dt>Base de datos</dt><dd>PostgreSQL · <code>gestion_productos</code></dd>
+  </dl>
+</div>
+
+<div class="nota">
+  <strong>Sobre las evidencias.</strong> La guía solicita capturas de Postman. Las
+  pruebas de la API se realizaron con <strong>Bruno</strong>, un cliente HTTP
+  equivalente, y la colección se entrega junto al proyecto en la carpeta
+  <code>bruno</code>. Las evidencias son microvideos en lugar de capturas fijas,
+  para que se observe la ejecución completa de cada paso y no solo su resultado.
+</div>
+
+<h2>1. Configuración de la conexión</h2>
+
+<p>
+  Archivo <code>src/main/resources/application.properties</code>, con los valores
+  indicados en el paso 3 de la guía:
+</p>
+
+<pre><code>spring.application.name=gestion-productos
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/gestion_productos
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+spring.flyway.enabled=true</code></pre>
+
+<h3>Análisis: ¿qué función cumple <code>spring.jpa.hibernate.ddl-auto=validate</code>?</h3>
+
+<p>
+  Indica a Hibernate que, al iniciar, <strong>compruebe</strong> que las tablas y
+  columnas que requieren las entidades existan en el esquema y sean compatibles
+  con ellas. No crea ni modifica nada. Si encuentra una diferencia, la aplicación
+  no arranca. Por eso toda la estructura de la base proviene de las migraciones de
+  Flyway, que se ejecutan antes de que Hibernate valide el modelo. En la sección 7
+  se demuestra este comportamiento con dos casos reales.
+</p>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-02.webm"></video>
+  <figcaption><b>Clip 02.</b> Archivo <code>application.properties</code> en el editor.</figcaption>
+</figure>
+
+<h2>2. Estructura de paquetes</h2>
+
+<pre><code>gestion-productos
+└── src/main
+    ├── java/ni/edu/uam/gestion_productos
+    │   ├── GestionProductosApplication.java
+    │   ├── controller
+    │   │   ├── CategoriaController.java
+    │   │   ├── ProductoController.java
+    │   │   └── ProveedorController.java
+    │   ├── entity
+    │   │   ├── Categoria.java
+    │   │   ├── Producto.java
+    │   │   └── Proveedor.java
+    │   └── repository
+    │       ├── CategoriaRepository.java
+    │       ├── ProductoRepository.java
+    │       └── ProveedorRepository.java
+    └── resources
+        ├── application.properties
+        └── db/migration
+            ├── V1__crear_tablas.sql
+            ├── V2__agregar_descripcion_producto.sql
+            └── V3__crear_proveedor_y_relacion.sql</code></pre>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-01.webm"></video>
+  <figcaption><b>Clip 01.</b> Estructura de paquetes en el explorador del editor.</figcaption>
+</figure>
+
+<h2>3. Entidades desarrolladas</h2>
+
+<h3>Categoria</h3>
+<pre><code>@Entity
+@Table(name = "categoria")
+public class Categoria {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    private String nombre;
+
+    private boolean activa;
+
+    // Getters y Setters
+}</code></pre>
+
+<h3>Producto</h3>
+<pre><code>@Entity
+@Table(name = "producto")
+public class Producto {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    private String codigo;
+
+    private String nombre;
+
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
+
+    @Column(name = "precio_venta")
+    private BigDecimal precioVenta;
+
+    private int existencia;
+
+    private String descripcion;
+
+    @ManyToOne
+    @JoinColumn(name = "proveedor_id")
+    private Proveedor proveedor;
+
+    // Getters y Setters
+}</code></pre>
+
+<h3>Proveedor</h3>
+<pre><code>@Entity
+@Table(name = "proveedor")
+public class Proveedor {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    private String nombre;
+
+    private String telefono;
+
+    private String correo;
+
+    private boolean activo;
+
+    // Getters y Setters
+}</code></pre>
+
+<p>
+  <code>descripcion</code> corresponde a la migración V2, y la relación con
+  <code>Proveedor</code> al reto final del paso 12. Ambas relaciones son
+  unidireccionales desde <code>Producto</code>: la entidad propietaria es la que
+  guarda la clave foránea.
+</p>
+
+<h3>Repositorios</h3>
+<pre><code>public interface CategoriaRepository extends JpaRepository&lt;Categoria, Integer&gt; {
+}
+
+public interface ProductoRepository extends JpaRepository&lt;Producto, Integer&gt; {
+}
+
+public interface ProveedorRepository extends JpaRepository&lt;Proveedor, Integer&gt; {
+}</code></pre>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-04.webm"></video>
+  <figcaption><b>Clip 04.</b> Las tres entidades, con <code>@ManyToOne</code> y <code>@JoinColumn</code>.</figcaption>
+</figure>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-05.webm"></video>
+  <figcaption><b>Clip 05.</b> Repositorios que extienden <code>JpaRepository</code> y los controladores REST.</figcaption>
+</figure>
+
+<h2>4. Diagrama de relaciones</h2>
+
+<figure>
+<svg viewBox="0 0 840 430" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Diagrama: Categoria uno a muchos Producto, Proveedor uno a muchos Producto"
+     style="width:100%;height:auto;border:1px solid var(--linea);border-radius:5px;background:#fff">
+  <defs>
+    <style>
+      .caja { fill: #f6f7f9; stroke: #5a5f66; stroke-width: 1.5; }
+      .titulo { fill: #1a1a1a; font: 600 15px "Segoe UI", sans-serif; }
+      .campo { fill: #1a1a1a; font: 12.5px Consolas, monospace; }
+      .pk { fill: #1d4ed8; font: 600 12.5px Consolas, monospace; }
+      .fk { fill: #b3261e; font: 600 12.5px Consolas, monospace; }
+      .rel { stroke: #1a1a1a; stroke-width: 1.5; fill: none; }
+      .card { fill: #1a1a1a; font: 600 13px "Segoe UI", sans-serif; }
+      .leyenda { fill: #5a5f66; font: 12px "Segoe UI", sans-serif; }
+      .barra { fill: #e8eaee; stroke: #5a5f66; stroke-width: 1.5; }
+    </style>
+  </defs>
+
+  <!-- CATEGORIA -->
+  <rect class="caja" x="20" y="30" width="210" height="128" rx="4"/>
+  <rect class="barra" x="20" y="30" width="210" height="28" rx="4"/>
+  <text class="titulo" x="32" y="49">CATEGORIA</text>
+  <text class="pk"    x="32" y="78">id  (PK)</text>
+  <text class="campo" x="32" y="99">nombre</text>
+  <text class="campo" x="32" y="120">activa</text>
+
+  <!-- PROVEEDOR -->
+  <rect class="caja" x="20" y="250" width="210" height="150" rx="4"/>
+  <rect class="barra" x="20" y="250" width="210" height="28" rx="4"/>
+  <text class="titulo" x="32" y="269">PROVEEDOR</text>
+  <text class="pk"    x="32" y="298">id  (PK)</text>
+  <text class="campo" x="32" y="319">nombre</text>
+  <text class="campo" x="32" y="340">telefono</text>
+  <text class="campo" x="32" y="361">correo</text>
+  <text class="campo" x="32" y="382">activo</text>
+
+  <!-- PRODUCTO -->
+  <rect class="caja" x="520" y="110" width="290" height="212" rx="4"/>
+  <rect class="barra" x="520" y="110" width="290" height="28" rx="4"/>
+  <text class="titulo" x="532" y="129">PRODUCTO</text>
+  <text class="pk"    x="532" y="158">id  (PK)</text>
+  <text class="campo" x="532" y="179">codigo        UNIQUE</text>
+  <text class="campo" x="532" y="200">nombre</text>
+  <text class="campo" x="532" y="221">precio_venta</text>
+  <text class="campo" x="532" y="242">existencia</text>
+  <text class="campo" x="532" y="263">descripcion</text>
+  <text class="fk"    x="532" y="284">categoria_id  (FK)</text>
+  <text class="fk"    x="532" y="305">proveedor_id  (FK)</text>
+
+  <!-- Categoria 1 -- N Producto -->
+  <path class="rel" d="M 230 94 H 380 V 280 H 520"/>
+  <text class="card" x="243" y="86">1</text>
+  <text class="card" x="498" y="272">N</text>
+
+  <!-- Proveedor 1 -- N Producto -->
+  <path class="rel" d="M 230 325 H 430 V 301 H 520"/>
+  <text class="card" x="243" y="317">1</text>
+  <text class="card" x="498" y="293">N</text>
+
+  <text class="leyenda" x="20" y="422">PK: clave primaria · FK: clave foránea · la clave foránea reside en PRODUCTO, la entidad propietaria de ambas relaciones</text>
+</svg>
+<figcaption>
+  Modelo relacional creado por las migraciones V1 y V3. Una categoría tiene
+  muchos productos; un proveedor tiene muchos productos.
+</figcaption>
+</figure>
+
+<p>
+  En términos de JPA, cada clave foránea de <code>PRODUCTO</code> se expresa con
+  <code>@ManyToOne</code> más <code>@JoinColumn</code>: muchos productos
+  referencian una categoría, y muchos productos referencian un proveedor.
+</p>
+
+<h2>5. Scripts de migración</h2>
+
+<h3>V1__crear_tablas.sql</h3>
+<pre><code>CREATE TABLE categoria (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    activa BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE producto (
+    id SERIAL PRIMARY KEY,
+    codigo VARCHAR(30) NOT NULL UNIQUE,
+    nombre VARCHAR(150) NOT NULL,
+    precio_venta NUMERIC(12,2) NOT NULL,
+    existencia INTEGER NOT NULL DEFAULT 0,
+    categoria_id INTEGER NOT NULL,
+
+    CONSTRAINT fk_producto_categoria
+        FOREIGN KEY (categoria_id)
+        REFERENCES categoria(id)
+);</code></pre>
+
+<h3>V2__agregar_descripcion_producto.sql</h3>
+<pre><code>ALTER TABLE producto
+ADD COLUMN descripcion VARCHAR(500);</code></pre>
+
+<h3>V3__crear_proveedor_y_relacion.sql</h3>
+<pre><code>CREATE TABLE proveedor (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
+    telefono VARCHAR(30),
+    correo VARCHAR(150),
+    activo BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- Se permite NULL para conservar los productos creados antes de V3.
+-- La asociación se completa mediante la API en el reto final.
+ALTER TABLE producto
+ADD COLUMN proveedor_id INTEGER;
+
+ALTER TABLE producto
+ADD CONSTRAINT fk_producto_proveedor
+    FOREIGN KEY (proveedor_id)
+    REFERENCES proveedor(id);</code></pre>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-03.webm"></video>
+  <figcaption><b>Clip 03.</b> Los tres scripts de migración en el editor.</figcaption>
+</figure>
+
+<h2>6. Evidencia de PostgreSQL</h2>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-06.webm"></video>
+  <figcaption>
+    <b>Clip 06 · paso 2.</b> La base <code>gestion_productos</code> existe y
+    <code>\dt</code> responde <em>Did not find any relations</em>: no se creó
+    ninguna tabla a mano.
+  </figcaption>
+</figure>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-07.webm"></video>
+  <figcaption>
+    <b>Clip 07 · pasos 3 y 4.</b> Arranque de la aplicación. Flyway aplica V1, V2
+    y V3 en orden y la aplicación inicia correctamente.
+  </figcaption>
+</figure>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-08.webm"></video>
+  <figcaption>
+    <b>Clip 08 · paso 4.</b> Tablas creadas, contenido de
+    <code>flyway_schema_history</code>, columnas de <code>producto</code> y sus dos
+    claves foráneas.
+  </figcaption>
+</figure>
+
+<p>Consultas utilizadas como evidencia:</p>
+
+<pre><code>\dt
+
+SELECT version, description, success
+FROM flyway_schema_history
+ORDER BY installed_rank;
+
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'producto'
+ORDER BY ordinal_position;
+
+SELECT conname, pg_get_constraintdef(oid)
+FROM pg_constraint
+WHERE conrelid = 'producto'::regclass AND contype = 'f';</code></pre>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-12.webm"></video>
+  <figcaption>
+    <b>Clip 12.</b> Consulta final con <code>JOIN</code>: cada producto con su
+    categoría y su proveedor resueltos desde la base de datos.
+  </figcaption>
+</figure>
+
+<pre><code>SELECT p.codigo, p.nombre, p.precio_venta, p.existencia,
+       c.nombre AS categoria, pr.nombre AS proveedor
+FROM producto p
+JOIN categoria c ON c.id = p.categoria_id
+LEFT JOIN proveedor pr ON pr.id = p.proveedor_id
+ORDER BY p.id;</code></pre>
+
+<h2>7. Qué hizo Flyway y qué evitó</h2>
+
+<p>
+  Esta sección documenta el comportamiento de las migraciones y de
+  <code>ddl-auto=validate</code> mediante casos ejecutados sobre la base de datos.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Caso</th><th>Resultado observado</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="hizo">HIZO</span> · Crear el esquema</td>
+      <td>Sobre una base vacía, V1, V2 y V3 crean las tablas y la relación, y cada versión queda registrada en <code>flyway_schema_history</code>.</td>
+    </tr>
+    <tr>
+      <td><span class="evito">EVITÓ</span> · Repetir una migración</td>
+      <td>Al reiniciar, Flyway informa <code>Schema "public" is up to date. No migration necessary.</code> No vuelve a ejecutar V1, V2 ni V3, lo que habría fallado porque las tablas ya existen.</td>
+    </tr>
+    <tr>
+      <td><span class="evito">EVITÓ</span> · Alterar el historial</td>
+      <td>Al modificar <code>V1__crear_tablas.sql</code> después de aplicada, el arranque se detiene con <code>Migration checksum mismatch for migration version 1</code>. Impide que el esquema real difiera del historial registrado.</td>
+    </tr>
+    <tr>
+      <td><span class="evito">EVITÓ</span> · Trabajar con un esquema atrasado</td>
+      <td>Con una base que no tiene todas las migraciones, <code>validate</code> detiene el arranque indicando la diferencia exacta, en lugar de fallar más tarde durante una consulta.</td>
+    </tr>
+    <tr>
+      <td><span class="evito">EVITÓ</span> · Que Hibernate creara tablas</td>
+      <td>Con Flyway desactivado y una base vacía, la aplicación se detiene con <code>Schema validation: missing table [categoria]</code> y la base permanece vacía. Con <code>create</code> o <code>update</code>, Hibernate habría creado el esquema por su cuenta, fuera del control de versiones.</td>
+    </tr>
+  </tbody>
+</table>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-13.webm"></video>
+  <figcaption>
+    <b>Clip 13.</b> Segundo arranque: <code>Schema "public" is up to date. No
+    migration necessary.</code> El historial sigue con tres versiones.
+  </figcaption>
+</figure>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-14.webm"></video>
+  <figcaption>
+    <b>Clip 14.</b> Se agrega una línea a V1 ya aplicada: Flyway detiene el
+    arranque por suma de verificación. Al restaurar el archivo, la aplicación
+    vuelve a iniciar.
+  </figcaption>
+</figure>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-15.webm"></video>
+  <figcaption>
+    <b>Clip 15.</b> Base vacía con Flyway desactivado:
+    <code>Schema validation: missing table [categoria]</code>. La base continúa
+    sin tablas, lo que confirma que <code>validate</code> solo verifica.
+  </figcaption>
+</figure>
+
+<h2>8. Pruebas de la API</h2>
+
+<p>
+  Colección ejecutada en Bruno sobre <code>http://localhost:8080</code>. Las
+  peticiones siguen el orden y los datos exactos de la guía.
+</p>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-09.webm"></video>
+  <figcaption>
+    <b>Clip 09 · pasos 8 y 9.</b> <code>GET /api/categorias</code> responde
+    <code>[]</code>; luego se crean <em>Computadoras</em>, <em>Accesorios</em> y
+    <em>Monitores</em> con <code>POST</code>, y el <code>GET</code> final muestra
+    las tres.
+  </figcaption>
+</figure>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-10.webm"></video>
+  <figcaption>
+    <b>Clip 10 · pasos 10 y 11.</b> <code>GET /api/productos</code> responde
+    <code>[]</code>; se crea <code>LAP-001</code> «Laptop Lenovo» con
+    <code>precioVenta</code> 850.00 y <code>existencia</code> 10, y el
+    <code>GET</code> posterior muestra la categoría anidada dentro del producto.
+  </figcaption>
+</figure>
+
+<pre><code>POST /api/productos
+
+{
+    "codigo": "LAP-001",
+    "nombre": "Laptop Lenovo",
+    "categoria": {
+        "id": 1
+    },
+    "precioVenta": 850.00,
+    "existencia": 10
+}</code></pre>
+
+<figure>
+  <video controls preload="metadata" src="videos/clip-11.webm"></video>
+  <figcaption>
+    <b>Clip 11 · paso 12, reto final.</b> Creación de dos proveedores, asociación
+    de productos y <code>GET /api/productos</code> final con la categoría y el
+    proveedor de cada producto.
+  </figcaption>
+</figure>
+
+<h2>9. Comprobación de aprendizaje</h2>
+
+<ol class="preguntas">
+  <li>
+    <strong>¿Cuál es la función de Spring Data JPA?</strong>
+    Facilitar el acceso a datos sobre JPA. Genera la implementación de los
+    repositorios a partir de interfaces y aporta operaciones de persistencia,
+    consultas derivadas del nombre del método, paginación y ordenamiento. En esta
+    práctica permite guardar y consultar categorías, productos y proveedores sin
+    escribir una clase DAO para cada entidad.
+  </li>
+  <li>
+    <strong>¿Qué función cumple Hibernate?</strong>
+    Es el proveedor de JPA que utiliza la aplicación. Traduce las operaciones
+    sobre entidades Java a sentencias SQL, administra el estado de esas entidades
+    en el contexto de persistencia y convierte los resultados devueltos por
+    PostgreSQL en objetos.
+  </li>
+  <li>
+    <strong>¿Qué diferencia existe entre JPA y Hibernate?</strong>
+    JPA es la especificación: define los contratos y las anotaciones de la
+    persistencia objeto-relacional. Hibernate es una implementación concreta de
+    esa especificación. Las entidades de este proyecto se anotan con
+    <code>jakarta.persistence</code>, que es JPA, y Hibernate es quien ejecuta la
+    persistencia.
+  </li>
+  <li>
+    <strong>¿Qué función cumple <code>@Entity</code>?</strong>
+    Declara que una clase es una entidad persistente administrada por JPA, de modo
+    que sus instancias corresponden a filas de una tabla. Requiere una clave
+    primaria indicada con <code>@Id</code>. <code>@Table</code> permite nombrar la
+    tabla asociada, como <code>categoria</code>, <code>producto</code> o
+    <code>proveedor</code>.
+  </li>
+  <li>
+    <strong>¿Qué función cumple <code>@ManyToOne</code>?</strong>
+    Expresa una relación de muchos a uno. Muchos productos pueden pertenecer a una
+    misma categoría y, tras el reto final, muchos productos pueden pertenecer a un
+    mismo proveedor. El lado <code>@ManyToOne</code> es el propietario de la
+    relación y el que guarda la clave foránea.
+  </li>
+  <li>
+    <strong>¿Qué función cumple <code>@JoinColumn</code>?</strong>
+    Indica cuál es la columna que almacena la clave foránea en la tabla de la
+    entidad propietaria. En <code>Producto</code>, <code>categoria_id</code>
+    referencia <code>categoria(id)</code> y <code>proveedor_id</code> referencia
+    <code>proveedor(id)</code>. Las restricciones correspondientes las crean las
+    migraciones V1 y V3.
+  </li>
+  <li>
+    <strong>¿Qué función cumple <code>JpaRepository</code>?</strong>
+    Aporta las operaciones de repositorio para una entidad y el tipo de su
+    identificador, sin necesidad de implementarlas: <code>findAll()</code> lista
+    los registros, <code>findById(id)</code> devuelve un <code>Optional</code>,
+    <code>save(entidad)</code> inserta o actualiza según el estado de la entidad,
+    <code>deleteById(id)</code> elimina, <code>existsById(id)</code> comprueba la
+    existencia y <code>count()</code> devuelve la cantidad de registros.
+  </li>
+  <li>
+    <strong>¿Por qué se utilizan migraciones?</strong>
+    Porque versionan la estructura de la base de datos y permiten reproducir sus
+    cambios siempre en el mismo orden, en cualquier entorno. Flyway registra cada
+    ejecución con su suma de verificación en
+    <code>flyway_schema_history</code>, de modo que una migración ya aplicada no
+    se repite ni se debe editar: los cambios posteriores se agregan en una versión
+    nueva. La sección 7 documenta este comportamiento.
+  </li>
+  <li>
+    <strong>¿Qué diferencia existe entre V1, V2 y V3?</strong>
+    Son tres cambios sucesivos de una misma base de datos, no tres bases distintas.
+    V1 crea <code>categoria</code> y <code>producto</code> con su relación. V2
+    agrega la columna <code>descripcion</code> a <code>producto</code>. V3 crea
+    <code>proveedor</code> y la columna <code>proveedor_id</code> con su clave
+    foránea. Cada versión aplica únicamente su propio cambio y conserva los datos
+    existentes.
+  </li>
+  <li>
+    <strong>¿Qué problema puede producir una relación bidireccional al generar JSON?</strong>
+    Recursión infinita: el producto serializa su categoría, la categoría serializa
+    su lista de productos y cada producto vuelve a serializar la categoría, hasta
+    desbordar la pila. También puede producir respuestas desproporcionadas al
+    arrastrar colecciones completas. En este proyecto las relaciones son
+    unidireccionales desde <code>Producto</code>, por lo que el problema no se
+    presenta. En un modelo bidireccional se resuelve con DTO,
+    <code>@JsonIgnore</code>, o <code>@JsonManagedReference</code> y
+    <code>@JsonBackReference</code>.
+  </li>
+</ol>
+
+<h2>10. Conclusión</h2>
+
+<p>
+  La práctica permitió conectar una API REST de Spring Boot con PostgreSQL y
+  resolver la persistencia mediante Spring Data JPA e Hibernate. Las entidades
+  <code>Categoria</code>, <code>Producto</code> y <code>Proveedor</code>
+  representan el modelo del caso de estudio, y las anotaciones
+  <code>@ManyToOne</code> y <code>@JoinColumn</code> trasladan las claves foráneas
+  del esquema al código. Los repositorios que extienden <code>JpaRepository</code>
+  aportaron las operaciones de consulta y guardado sin implementar una sola clase
+  de acceso a datos. Flyway organizó la evolución del esquema en tres versiones
+  aplicadas en orden y registradas en su historial, y las pruebas mostraron que
+  bloquea tanto la repetición de una migración como la modificación de una ya
+  aplicada. Mantener <code>ddl-auto=validate</code> dejó la creación del esquema
+  enteramente en manos de las migraciones y convirtió cualquier diferencia entre
+  el código y la base en un error visible al arrancar. Las pruebas de la API
+  confirmaron que las relaciones quedan persistidas y no solo representadas en el
+  JSON de respuesta.
+</p>
+
+</body>
+</html>
