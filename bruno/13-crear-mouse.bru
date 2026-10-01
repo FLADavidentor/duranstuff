@@ -1,7 +1,7 @@
 meta {
-  name: Paso 12 - Producto del segundo proveedor
+  name: P12 POST MOU-001 Mouse
   type: http
-  seq: 6
+  seq: 13
 }
 
 post {
@@ -15,18 +15,18 @@ body:json {
     "codigo": "MOU-001",
     "nombre": "Mouse inalambrico",
     "categoria": {
-      "id": 2
+        "id": 2
     },
-    "precioVenta": 25,
+    "precioVenta": 25.00,
     "existencia": 30,
     "descripcion": "Mouse inalambrico para oficina",
     "proveedor": {
-      "id": {{proveedor2Id}}
+        "id": 2
     }
   }
 }
 
 tests {
   test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
-  test("Segundo proveedor asociado", function () { expect(res.getBody().proveedor.id).to.equal(Number(bru.getVar("proveedor2Id"))); });
+  test("Segundo proveedor asociado", function () { expect(res.getBody().codigo).to.equal("MOU-001"); expect(res.getBody().proveedor.id).to.equal(2); });
 }

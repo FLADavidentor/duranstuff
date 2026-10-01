@@ -1,0 +1,16 @@
+meta {
+  name: P11 GET producto con categoria
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/productos
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("La categoria viene anidada en el producto", function () { const p = res.getBody().find(x => x.codigo === "LAP-001"); expect(p.categoria.nombre).to.equal("Computadoras"); expect(p.existencia).to.equal(10); });
+}

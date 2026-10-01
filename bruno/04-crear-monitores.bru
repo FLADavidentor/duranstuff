@@ -1,0 +1,23 @@
+meta {
+  name: P09 POST Monitores
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/categorias
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nombre": "Monitores",
+    "activa": true
+  }
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Categoria guardada", function () { expect(res.getBody().nombre).to.equal("Monitores"); });
+}

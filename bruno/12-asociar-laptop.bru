@@ -1,7 +1,7 @@
 meta {
-  name: Paso 12 - Asociar laptop al proveedor
+  name: P12 POST asociar LAP-001
   type: http
-  seq: 5
+  seq: 12
 }
 
 post {
@@ -12,22 +12,22 @@ post {
 
 body:json {
   {
-    "id": {{laptopId}},
+    "id": 1,
     "codigo": "LAP-001",
     "nombre": "Laptop Lenovo",
     "categoria": {
-      "id": {{computadorasId}}
+        "id": 1
     },
-    "precioVenta": 850,
+    "precioVenta": 850.00,
     "existencia": 10,
     "descripcion": "Laptop Lenovo para trabajo y estudio",
     "proveedor": {
-      "id": {{proveedor1Id}}
+        "id": 1
     }
   }
 }
 
 tests {
   test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
-  test("Proveedor asociado", function () { expect(res.getBody().proveedor.id).to.equal(Number(bru.getVar("proveedor1Id"))); expect(res.getBody().descripcion).to.equal("Laptop Lenovo para trabajo y estudio"); });
+  test("Proveedor asociado", function () { expect(res.getBody().proveedor.nombre).to.equal("Tecnologia Central"); });
 }

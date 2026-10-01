@@ -1,0 +1,16 @@
+meta {
+  name: P12 GET productos final
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{baseUrl}}/api/productos
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Dos productos con categoria y proveedor", function () { const filas = res.getBody(); expect(filas).to.have.lengthOf(2); const lap = filas.find(p => p.codigo === "LAP-001"); const mou = filas.find(p => p.codigo === "MOU-001"); expect(lap.categoria.nombre).to.equal("Computadoras"); expect(lap.proveedor.nombre).to.equal("Tecnologia Central"); expect(mou.categoria.nombre).to.equal("Accesorios"); expect(mou.proveedor.nombre).to.equal("Suministros Digitales"); });
+}

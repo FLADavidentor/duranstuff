@@ -1,0 +1,16 @@
+meta {
+  name: P09 GET tres categorias
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/categorias
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Las tres categorias de la guia", function () { expect(res.getBody().map(c => c.nombre)).to.have.members(["Computadoras", "Accesorios", "Monitores"]); });
+}

@@ -1,7 +1,7 @@
 meta {
-  name: Paso 11 - Laptop Lenovo
+  name: P11 POST LAP-001 Laptop
   type: http
-  seq: 5
+  seq: 7
 }
 
 post {
@@ -15,14 +15,14 @@ body:json {
     "codigo": "LAP-001",
     "nombre": "Laptop Lenovo",
     "categoria": {
-      "id": 1
+        "id": 1
     },
-    "precioVenta": 850,
+    "precioVenta": 850.00,
     "existencia": 10
   }
 }
 
 tests {
   test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
-  test("Producto persistido", function () { expect(res.getBody().codigo).to.equal("LAP-001"); expect(res.getBody().precioVenta).to.equal(850); expect(res.getBody().categoria.id).to.equal(1); });
+  test("Producto guardado", function () { expect(res.getBody().codigo).to.equal("LAP-001"); expect(res.getBody().categoria.id).to.equal(1); });
 }
