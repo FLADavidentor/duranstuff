@@ -1,0 +1,27 @@
+meta {
+  name: Paso 9 - Crear Computadoras
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/categorias
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nombre": "Computadoras",
+    "activa": true
+  }
+}
+
+script:post-response {
+  bru.setVar("computadorasId", res.getBody().id);
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Categoria persistida", function () { expect(res.getBody().id).to.be.a("number"); expect(res.getBody().nombre).to.equal("Computadoras"); expect(res.getBody().activa).to.equal(true); });
+}

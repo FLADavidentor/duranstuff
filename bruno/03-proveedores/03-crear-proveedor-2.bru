@@ -1,0 +1,29 @@
+meta {
+  name: Paso 12 - Proveedor 2
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/proveedores
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nombre": "Suministros Digitales",
+    "telefono": "2222-2000",
+    "correo": "ventas@suministros-digitales.example",
+    "activo": true
+  }
+}
+
+script:post-response {
+  bru.setVar("proveedor2Id", res.getBody().id);
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Proveedor guardado", function () { expect(res.getBody().id).to.be.a("number"); expect(res.getBody().nombre).to.equal("Suministros Digitales"); expect(res.getBody().activo).to.equal(true); });
+}

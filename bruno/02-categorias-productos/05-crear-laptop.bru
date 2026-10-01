@@ -1,0 +1,28 @@
+meta {
+  name: Paso 11 - Laptop Lenovo
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/productos
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "codigo": "LAP-001",
+    "nombre": "Laptop Lenovo",
+    "categoria": {
+      "id": 1
+    },
+    "precioVenta": 850,
+    "existencia": 10
+  }
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Producto persistido", function () { expect(res.getBody().codigo).to.equal("LAP-001"); expect(res.getBody().precioVenta).to.equal(850); expect(res.getBody().categoria.id).to.equal(1); });
+}

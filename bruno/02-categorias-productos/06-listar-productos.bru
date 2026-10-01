@@ -1,0 +1,16 @@
+meta {
+  name: Paso 11 - Producto con categoria
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/productos
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Relacion Categoria dentro del JSON", function () { const p = res.getBody().find(p => p.codigo === "LAP-001"); expect(p.categoria.nombre).to.equal("Computadoras"); expect(p.existencia).to.equal(10); });
+}

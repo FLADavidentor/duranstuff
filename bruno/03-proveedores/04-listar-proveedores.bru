@@ -1,0 +1,16 @@
+meta {
+  name: Paso 12 - Dos proveedores
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/proveedores
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Dos proveedores", function () { expect(res.getBody()).to.have.lengthOf(2); });
+}

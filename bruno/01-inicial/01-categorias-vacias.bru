@@ -1,0 +1,16 @@
+meta {
+  name: Paso 8 - Categorias vacias
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/categorias
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Lista inicial vacia", function () { expect(res.getBody()).to.deep.equal([]); });
+}

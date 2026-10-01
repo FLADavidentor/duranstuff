@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Semana 7 - Gestion de productos",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

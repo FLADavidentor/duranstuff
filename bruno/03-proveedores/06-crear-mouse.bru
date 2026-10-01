@@ -1,0 +1,32 @@
+meta {
+  name: Paso 12 - Producto del segundo proveedor
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/productos
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "codigo": "MOU-001",
+    "nombre": "Mouse inalambrico",
+    "categoria": {
+      "id": 2
+    },
+    "precioVenta": 25,
+    "existencia": 30,
+    "descripcion": "Mouse inalambrico para oficina",
+    "proveedor": {
+      "id": {{proveedor2Id}}
+    }
+  }
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Segundo proveedor asociado", function () { expect(res.getBody().proveedor.id).to.equal(Number(bru.getVar("proveedor2Id"))); });
+}

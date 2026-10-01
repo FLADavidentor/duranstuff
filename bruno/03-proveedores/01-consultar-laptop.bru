@@ -1,0 +1,20 @@
+meta {
+  name: Paso 12 - Identificar laptop existente
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/productos
+  body: none
+  auth: none
+}
+
+script:post-response {
+  const p = res.getBody().find(p => p.codigo === "LAP-001"); if (p) { bru.setVar("laptopId", p.id); bru.setVar("computadorasId", p.categoria.id); }
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Laptop del paso 11", function () { expect(res.getBody().some(p => p.codigo === "LAP-001")).to.equal(true); });
+}

@@ -1,0 +1,33 @@
+meta {
+  name: Paso 12 - Asociar laptop al proveedor
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/productos
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id": {{laptopId}},
+    "codigo": "LAP-001",
+    "nombre": "Laptop Lenovo",
+    "categoria": {
+      "id": {{computadorasId}}
+    },
+    "precioVenta": 850,
+    "existencia": 10,
+    "descripcion": "Laptop Lenovo para trabajo y estudio",
+    "proveedor": {
+      "id": {{proveedor1Id}}
+    }
+  }
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Proveedor asociado", function () { expect(res.getBody().proveedor.id).to.equal(Number(bru.getVar("proveedor1Id"))); expect(res.getBody().descripcion).to.equal("Laptop Lenovo para trabajo y estudio"); });
+}
