@@ -1,3 +1,6 @@
 .runtime/
 .idea/
 **/target/
+
+.fake
+videos/

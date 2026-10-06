@@ -66,6 +66,13 @@
     border-left: 3px solid var(--acento); background: var(--panel);
     padding: 12px 16px; margin: 0 0 20px; font-size: 0.93rem;
   }
+  pre.consola {
+    background: #1e1e1e; color: #e6e6e6; border: 1px solid #3a3a3a;
+    border-left: 3px solid var(--falla);
+  }
+  pre.consola .cmd { color: #6fb3ff; }
+  pre.consola .err { color: #ff8a80; font-weight: 600; }
+  pre.consola .ok { color: #8bd98b; }
   ol.preguntas { padding-left: 24px; }
   ol.preguntas > li { margin-bottom: 20px; }
   ol.preguntas > li > strong { display: block; margin-bottom: 4px; }
@@ -98,8 +105,13 @@
   <strong>Sobre las evidencias.</strong> La guía solicita capturas de Postman. Las
   pruebas de la API se realizaron con <strong>Bruno</strong>, un cliente HTTP
   equivalente, y la colección se entrega junto al proyecto en la carpeta
-  <code>bruno</code>. Las evidencias son microvideos en lugar de capturas fijas,
-  para que se observe la ejecución completa de cada paso y no solo su resultado.
+  <code>bruno</code>. En lugar de capturas fijas, las evidencias son
+  <strong>microvideos</strong> grabados durante la ejecución, para que se observe
+  el proceso completo de cada paso y no solo su resultado. Los videos están en la
+  carpeta <code>videos</code>, junto a este documento. Los dos casos de la
+  sección 7 que demuestran qué impide Flyway se documentan con la
+  <strong>salida literal de la consola</strong>, que incluye las sumas de
+  verificación y los mensajes de error exactos.
 </div>
 
 <h2>1. Configuración de la conexión</h2>
@@ -133,7 +145,7 @@ spring.flyway.enabled=true</code></pre>
 </p>
 
 <figure>
-  <video controls preload="metadata" src="videos/clip-02.webm"></video>
+  <video controls preload="metadata" src="videos/clip-02.mp4"></video>
   <figcaption><b>Clip 02.</b> Archivo <code>application.properties</code> en el editor.</figcaption>
 </figure>
 
@@ -163,7 +175,7 @@ spring.flyway.enabled=true</code></pre>
             └── V3__crear_proveedor_y_relacion.sql</code></pre>
 
 <figure>
-  <video controls preload="metadata" src="videos/clip-01.webm"></video>
+  <video controls preload="metadata" src="videos/clip-01.mp4"></video>
   <figcaption><b>Clip 01.</b> Estructura de paquetes en el explorador del editor.</figcaption>
 </figure>
 
@@ -253,15 +265,10 @@ public interface ProductoRepository extends JpaRepository&lt;Producto, Integer&g
 public interface ProveedorRepository extends JpaRepository&lt;Proveedor, Integer&gt; {
 }</code></pre>
 
-<figure>
-  <video controls preload="metadata" src="videos/clip-04.webm"></video>
-  <figcaption><b>Clip 04.</b> Las tres entidades, con <code>@ManyToOne</code> y <code>@JoinColumn</code>.</figcaption>
-</figure>
-
-<figure>
-  <video controls preload="metadata" src="videos/clip-05.webm"></video>
-  <figcaption><b>Clip 05.</b> Repositorios que extienden <code>JpaRepository</code> y los controladores REST.</figcaption>
-</figure>
+<p>
+  El código completo de las tres entidades y de los repositorios se muestra
+  arriba, tal como está en el proyecto entregado.
+</p>
 
 <h2>4. Diagrama de relaciones</h2>
 
@@ -384,14 +391,14 @@ ADD CONSTRAINT fk_producto_proveedor
     REFERENCES proveedor(id);</code></pre>
 
 <figure>
-  <video controls preload="metadata" src="videos/clip-03.webm"></video>
+  <video controls preload="metadata" src="videos/clip-03.mp4"></video>
   <figcaption><b>Clip 03.</b> Los tres scripts de migración en el editor.</figcaption>
 </figure>
 
 <h2>6. Evidencia de PostgreSQL</h2>
 
 <figure>
-  <video controls preload="metadata" src="videos/clip-06.webm"></video>
+  <video controls preload="metadata" src="videos/clip-06.mp4"></video>
   <figcaption>
     <b>Clip 06 · paso 2.</b> La base <code>gestion_productos</code> existe y
     <code>\dt</code> responde <em>Did not find any relations</em>: no se creó
@@ -400,7 +407,7 @@ ADD CONSTRAINT fk_producto_proveedor
 </figure>
 
 <figure>
-  <video controls preload="metadata" src="videos/clip-07.webm"></video>
+  <video controls preload="metadata" src="videos/clip-07.mp4"></video>
   <figcaption>
     <b>Clip 07 · pasos 3 y 4.</b> Arranque de la aplicación. Flyway aplica V1, V2
     y V3 en orden y la aplicación inicia correctamente.
@@ -408,7 +415,7 @@ ADD CONSTRAINT fk_producto_proveedor
 </figure>
 
 <figure>
-  <video controls preload="metadata" src="videos/clip-08.webm"></video>
+  <video controls preload="metadata" src="videos/clip-08.mp4"></video>
   <figcaption>
     <b>Clip 08 · paso 4.</b> Tablas creadas, contenido de
     <code>flyway_schema_history</code>, columnas de <code>producto</code> y sus dos
@@ -434,7 +441,7 @@ FROM pg_constraint
 WHERE conrelid = 'producto'::regclass AND contype = 'f';</code></pre>
 
 <figure>
-  <video controls preload="metadata" src="videos/clip-12.webm"></video>
+  <video controls preload="metadata" src="videos/clip-12.mp4"></video>
   <figcaption>
     <b>Clip 12.</b> Consulta final con <code>JOIN</code>: cada producto con su
     categoría y su proveedor resueltos desde la base de datos.
@@ -484,30 +491,64 @@ ORDER BY p.id;</code></pre>
 </table>
 
 <figure>
-  <video controls preload="metadata" src="videos/clip-13.webm"></video>
+  <video controls preload="metadata" src="videos/clip-13.mp4"></video>
   <figcaption>
     <b>Clip 13.</b> Segundo arranque: <code>Schema "public" is up to date. No
     migration necessary.</code> El historial sigue con tres versiones.
   </figcaption>
 </figure>
 
-<figure>
-  <video controls preload="metadata" src="videos/clip-14.webm"></video>
-  <figcaption>
-    <b>Clip 14.</b> Se agrega una línea a V1 ya aplicada: Flyway detiene el
-    arranque por suma de verificación. Al restaurar el archivo, la aplicación
-    vuelve a iniciar.
-  </figcaption>
-</figure>
+<h3>Caso: modificar una migración ya aplicada</h3>
 
-<figure>
-  <video controls preload="metadata" src="videos/clip-15.webm"></video>
-  <figcaption>
-    <b>Clip 15.</b> Base vacía con Flyway desactivado:
-    <code>Schema validation: missing table [categoria]</code>. La base continúa
-    sin tablas, lo que confirma que <code>validate</code> solo verifica.
-  </figcaption>
-</figure>
+<p>
+  Se agregó la línea <code>-- cambio no autorizado</code> al final de
+  <code>V1__crear_tablas.sql</code>, que ya estaba aplicada, y se ejecutó
+  nuevamente la aplicación. Salida real de la consola:
+</p>
+
+<pre class="consola"><code><span class="cmd">.\mvnw.cmd spring-boot:run</span>
+
+Error creating bean with name 'flywayInitializer':
+<span class="err">Validate failed: Migrations have failed validation</span>
+<span class="err">Migration checksum mismatch for migration version 1</span>
+-&gt; Applied to database : -2073192044
+-&gt; Resolved locally    : -1601558745
+
+[INFO] BUILD FAILURE</code></pre>
+
+<p>
+  La aplicación no arranca. Los dos números son la prueba del mecanismo: Flyway
+  guardó <code>-2073192044</code> en <code>flyway_schema_history</code> cuando
+  aplicó V1, y al recalcular la suma sobre el archivo modificado obtuvo
+  <code>-1601558745</code>. Al restaurar el archivo a su contenido original, la
+  aplicación vuelve a iniciar con normalidad.
+</p>
+
+<h3>Caso: base vacía con Flyway desactivado</h3>
+
+<p>
+  Se creó la base <code>demo_vacia</code>, sin ninguna tabla, y se ejecutó la
+  aplicación contra ella con <code>spring.flyway.enabled=false</code>, dejando
+  <code>ddl-auto=validate</code> tal como lo pide la guía. Salida real:
+</p>
+
+<pre class="consola"><code><span class="cmd">.\mvnw.cmd spring-boot:run --spring.datasource.url=...demo_vacia --spring.flyway.enabled=false</span>
+
+Failed to initialize JPA EntityManagerFactory:
+<span class="err">Schema validation: missing table [categoria]</span>
+
+[INFO] BUILD FAILURE
+
+<span class="cmd">psql -d demo_vacia -c "\dt"</span>
+Did not find any relations.</code></pre>
+
+<p>
+  La aplicación no arranca y, sobre todo, <strong>la base sigue vacía</strong>.
+  Hibernate detectó que faltaba la tabla y se detuvo, sin crearla. Con
+  <code>create</code> o <code>update</code> habría generado el esquema por su
+  cuenta, fuera del control de versiones de Flyway. Esa es exactamente la
+  diferencia que introduce <code>validate</code>.
+</p>
 
 <h2>8. Pruebas de la API</h2>
 
@@ -517,7 +558,7 @@ ORDER BY p.id;</code></pre>
 </p>
 
 <figure>
-  <video controls preload="metadata" src="videos/clip-09.webm"></video>
+  <video controls preload="metadata" src="videos/clip-09.mp4"></video>
   <figcaption>
     <b>Clip 09 · pasos 8 y 9.</b> <code>GET /api/categorias</code> responde
     <code>[]</code>; luego se crean <em>Computadoras</em>, <em>Accesorios</em> y
@@ -527,7 +568,7 @@ ORDER BY p.id;</code></pre>
 </figure>
 
 <figure>
-  <video controls preload="metadata" src="videos/clip-10.webm"></video>
+  <video controls preload="metadata" src="videos/clip-10.mp4"></video>
   <figcaption>
     <b>Clip 10 · pasos 10 y 11.</b> <code>GET /api/productos</code> responde
     <code>[]</code>; se crea <code>LAP-001</code> «Laptop Lenovo» con
@@ -549,7 +590,7 @@ ORDER BY p.id;</code></pre>
 }</code></pre>
 
 <figure>
-  <video controls preload="metadata" src="videos/clip-11.webm"></video>
+  <video controls preload="metadata" src="videos/clip-11.mp4"></video>
   <figcaption>
     <b>Clip 11 · paso 12, reto final.</b> Creación de dos proveedores, asociación
     de productos y <code>GET /api/productos</code> final con la categoría y el
