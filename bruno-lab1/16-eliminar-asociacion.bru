@@ -1,0 +1,16 @@
+meta {
+  name: L16 DELETE quitar asociacion - RETO 1
+  type: http
+  seq: 16
+}
+
+delete {
+  url: {{baseUrl}}/api/productos/1/etiquetas/{{etiqueta1Id}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Queda solo la otra etiqueta", function () { expect(res.getBody().etiquetas).to.have.lengthOf(1); expect(res.getBody().etiquetas[0].nombre).to.equal("Importado"); });
+}

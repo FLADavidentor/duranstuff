@@ -1,0 +1,16 @@
+meta {
+  name: L11 GET listar etiquetas
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/etiquetas
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Las dos etiquetas existen", function () { const n = res.getBody().map(e => e.nombre); expect(n).to.include("Oferta"); expect(n).to.include("Importado"); });
+}

@@ -1,0 +1,26 @@
+meta {
+  name: L09 POST crear etiqueta Oferta
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/etiquetas
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nombre": "Oferta"
+  }
+}
+
+script:post-response {
+  bru.setVar("etiqueta1Id", res.getBody().id);
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Etiqueta guardada por el Service", function () { expect(res.getBody().nombre).to.equal("Oferta"); expect(res.getBody().id).to.be.a("number"); });
+}

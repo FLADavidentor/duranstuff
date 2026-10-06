@@ -1,0 +1,30 @@
+meta {
+  name: L03 POST crear producto con DTO
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/productos
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "codigo": "TEC-001",
+    "nombre": "Teclado mecanico",
+    "precioVenta": 45.00,
+    "existencia": 15,
+    "categoriaId": 3
+  }
+}
+
+script:post-response {
+  bru.setVar("nuevoProductoId", res.getBody().id);
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Se guardo con la categoria resuelta por el Service", function () { expect(res.getBody().codigo).to.equal("TEC-001"); expect(res.getBody().categoria.id).to.equal(3); });
+}

@@ -1,0 +1,16 @@
+meta {
+  name: L15 GET productos por etiqueta - RETO 2
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{baseUrl}}/api/productos/etiqueta/{{etiqueta1Id}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Devuelve el producto etiquetado", function () { expect(res.getBody().some(p => p.id === 1)).to.equal(true); });
+}

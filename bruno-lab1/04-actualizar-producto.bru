@@ -1,0 +1,26 @@
+meta {
+  name: L04 PUT actualizar producto
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/productos/{{nuevoProductoId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "codigo": "TEC-001",
+    "nombre": "Teclado mecanico retroiluminado",
+    "precioVenta": 59.00,
+    "existencia": 8,
+    "categoriaId": 3
+  }
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Los datos cambiaron", function () { expect(res.getBody().nombre).to.equal("Teclado mecanico retroiluminado"); expect(Number(res.getBody().precioVenta)).to.equal(59); });
+}

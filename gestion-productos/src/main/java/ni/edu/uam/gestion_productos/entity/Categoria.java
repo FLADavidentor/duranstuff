@@ -1,9 +1,14 @@
 package ni.edu.uam.gestion_productos.entity;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -41,4 +46,8 @@ public class Categoria {
     public void setActiva(boolean activa) {
         this.activa = activa;
     }
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "categoria")
+    private List<Producto> productos;
 }

@@ -1,0 +1,16 @@
+meta {
+  name: L13 POST asociar Importado al producto 1
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/api/productos/1/etiquetas/{{etiqueta2Id}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Ahora tiene dos etiquetas", function () { expect(res.getBody().etiquetas).to.have.lengthOf(2); });
+}

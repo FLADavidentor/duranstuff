@@ -1,0 +1,16 @@
+meta {
+  name: L12 POST asociar Oferta al producto 1
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/productos/1/etiquetas/{{etiqueta1Id}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("El producto quedo con la etiqueta", function () { expect(res.getBody().etiquetas.some(e => e.nombre === "Oferta")).to.equal(true); });
+}

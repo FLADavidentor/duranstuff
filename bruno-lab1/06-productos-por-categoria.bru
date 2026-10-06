@@ -1,0 +1,16 @@
+meta {
+  name: L06 GET productos por categoria
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/productos/categoria/3
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Solo productos de la categoria 3", function () { const filas = res.getBody(); expect(filas.length).to.be.greaterThan(0); filas.forEach(p => expect(p.categoria.id).to.equal(3)); });
+}

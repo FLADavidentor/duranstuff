@@ -1,0 +1,26 @@
+meta {
+  name: L10 POST crear etiqueta Importado
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/etiquetas
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nombre": "Importado"
+  }
+}
+
+script:post-response {
+  bru.setVar("etiqueta2Id", res.getBody().id);
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Etiqueta guardada", function () { expect(res.getBody().nombre).to.equal("Importado"); });
+}

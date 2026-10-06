@@ -1,0 +1,16 @@
+meta {
+  name: L17 GET la etiqueta no fue borrada
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/api/etiquetas
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Solo se borro la asociacion, la etiqueta sigue", function () { expect(res.getBody().map(e => e.nombre)).to.include("Oferta"); });
+}

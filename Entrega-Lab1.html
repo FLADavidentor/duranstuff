@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorio 1 - Servicios, DTOs y relaciones</title>
+<style>
+  :root {
+    --tinta: #1a1a1a; --suave: #5a5f66; --linea: #d8dce2; --fondo: #ffffff;
+    --panel: #f6f7f9; --codigo: #f2f4f7; --acento: #1d4ed8; --exito: #0f7a3d; --falla: #b3261e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto; padding: 48px 24px 96px; max-width: 880px;
+    font: 16px/1.65 "Segoe UI", system-ui, sans-serif; color: var(--tinta); background: var(--fondo);
+  }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 4px; }
+  h2 { font-size: 1.3rem; margin: 56px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--linea); }
+  h3 { font-size: 1.05rem; margin: 32px 0 10px; }
+  p, li { margin: 0 0 12px; }
+  code, pre { font-family: Consolas, "Cascadia Mono", monospace; }
+  code { background: var(--codigo); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+  pre {
+    background: var(--codigo); border: 1px solid var(--linea); border-left: 3px solid var(--acento);
+    padding: 14px 16px; overflow-x: auto; border-radius: 4px; font-size: 0.84rem; line-height: 1.5; margin: 0 0 16px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  pre.consola { background: #1e1e1e; color: #e6e6e6; border: 1px solid #3a3a3a; border-left: 3px solid var(--exito); }
+  pre.consola .ok { color: #8bd98b; font-weight: 600; }
+  pre.consola .cmd { color: #6fb3ff; }
+  .portada { border: 1px solid var(--linea); border-radius: 6px; padding: 28px 32px; background: var(--panel); margin-bottom: 8px; }
+  .portada dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 20px; margin: 20px 0 0; }
+  .portada dt { color: var(--suave); }
+  .portada dd { margin: 0; }
+  .pendiente { background: #fff3cd; border: 1px dashed #b8860b; padding: 2px 8px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 0 0 20px; font-size: 0.9rem; }
+  th, td { border: 1px solid var(--linea); padding: 8px 11px; text-align: left; vertical-align: top; }
+  th { background: var(--panel); font-weight: 600; }
+  .nota { border-left: 3px solid var(--acento); background: var(--panel); padding: 12px 16px; margin: 0 0 20px; font-size: 0.93rem; }
+  ol.preguntas { padding-left: 24px; }
+  ol.preguntas > li { margin-bottom: 20px; }
+  ol.preguntas > li > strong { display: block; margin-bottom: 4px; }
+  figure { margin: 20px 0 28px; }
+  figcaption { font-size: 0.86rem; color: var(--suave); margin-top: 8px; }
+  @media print {
+    body { padding: 0; max-width: none; font-size: 11pt; }
+    h2 { page-break-after: avoid; }
+    pre, table, figure { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="portada">
+  <h1>Laboratorio #1: Persistencia con Spring Data JPA, servicios, DTOs y relaciones</h1>
+  <p style="color:var(--suave); margin:0">Práctica guiada #2 · Documento de entrega</p>
+  <dl>
+    <dt>Asignatura</dt><dd>Servicios Web</dd>
+    <dt>Unidad</dt><dd>Unidad II. Desarrollo de Servicios Web con Spring Boot</dd>
+    <dt>Proyecto base</dt><dd><code>gestion-productos</code></dd>
+    <dt>Estudiante</dt><dd><span class="pendiente">[nombre del estudiante]</span></dd>
+    <dt>Carné</dt><dd><span class="pendiente">[número de carné]</span></dd>
+    <dt>Rama</dt><dd><code>semana8</code></dd>
+  </dl>
+</div>
+
+<div class="nota">
+  <strong>Sobre las evidencias.</strong> La guía solicita pruebas en Postman. Se
+  utilizó <strong>Bruno</strong>, un cliente HTTP equivalente, cuya colección se
+  entrega en la carpeta <code>bruno-lab1</code>. Las 17 peticiones se ejecutan en
+  orden y cada una incluye comprobaciones automáticas, por lo que la evidencia es
+  verificable y reproducible: basta abrir la colección y ejecutarla.
+</div>
+
+<h2>1. Arquitectura y estructura de paquetes</h2>
+
+<p>La arquitectura objetivo separa responsabilidades en cuatro capas:</p>
+
+<pre><code>Cliente  →  Controller  →  Service  →  Repository  →  PostgreSQL</code></pre>
+
+<p>
+  Ninguna clase <code>Controller</code> accede directamente a un
+  <code>Repository</code>: toda petición pasa por su <code>Service</code>.
+</p>
+
+<pre><code>src/main/java/ni/edu/uam/gestion_productos
+├── GestionProductosApplication.java
+├── controller
+│   ├── CategoriaController.java
+│   ├── EtiquetaController.java
+│   ├── ProductoController.java
+│   └── ProveedorController.java
+├── service
+│   ├── CategoriaService.java
+│   ├── EtiquetaService.java
+│   ├── ProductoService.java
+│   └── ProveedorService.java
+├── repository
+│   ├── CategoriaRepository.java
+│   ├── EtiquetaRepository.java
+│   ├── ProductoRepository.java
+│   └── ProveedorRepository.java
+├── entity
+│   ├── Categoria.java
+│   ├── Etiqueta.java
+│   ├── Producto.java
+│   └── Proveedor.java
+└── dto
+    ├── CategoriaRequestDTO.java
+    ├── EtiquetaRequestDTO.java
+    ├── ProductoRequestDTO.java
+    └── ProveedorRequestDTO.java</code></pre>
+
+<p>Cada entidad cuenta con las cuatro piezas de la arquitectura:</p>
+
+<table>
+  <thead>
+    <tr><th>Entidad</th><th>Controller</th><th>Service</th><th>Repository</th><th>DTO</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Producto</td><td>✔</td><td>✔</td><td>✔</td><td><code>ProductoRequestDTO</code></td></tr>
+    <tr><td>Categoria</td><td>✔</td><td>✔</td><td>✔</td><td><code>CategoriaRequestDTO</code></td></tr>
+    <tr><td>Proveedor</td><td>✔</td><td>✔</td><td>✔</td><td><code>ProveedorRequestDTO</code></td></tr>
+    <tr><td>Etiqueta</td><td>✔</td><td>✔</td><td>✔</td><td><code>EtiquetaRequestDTO</code></td></tr>
+  </tbody>
+</table>
+
+<h2>2. Capa de servicios</h2>
+
+<p>
+  <code>ProductoService</code> concentra la lógica de negocio: resuelve la
+  categoría a partir de su identificador, construye la entidad desde el DTO y
+  administra las etiquetas. Depende de <code>CategoriaService</code> y
+  <code>EtiquetaService</code>, no de sus repositorios, de modo que la búsqueda y
+  el error "no encontrada" existen en un solo lugar.
+</p>
+
+<pre><code>@Service
+public class ProductoService {
+
+    private final ProductoRepository productoRepository;
+    private final CategoriaService categoriaService;
+    private final EtiquetaService etiquetaService;
+
+    public ProductoService(ProductoRepository productoRepository,
+                           CategoriaService categoriaService,
+                           EtiquetaService etiquetaService) {
+        this.productoRepository = productoRepository;
+        this.categoriaService = categoriaService;
+        this.etiquetaService = etiquetaService;
+    }
+
+    public Producto guardar(ProductoRequestDTO dto) {
+
+        Categoria categoria = categoriaService
+                .buscarPorId(dto.getCategoriaId());
+
+        Producto producto = new Producto();
+
+        producto.setCodigo(dto.getCodigo());
+        producto.setNombre(dto.getNombre());
+        producto.setPrecioVenta(dto.getPrecioVenta());
+        producto.setExistencia(dto.getExistencia());
+        producto.setCategoria(categoria);
+
+        return productoRepository.save(producto);
+    }
+
+    public Producto agregarEtiqueta(Integer productoId, Integer etiquetaId) {
+
+        Producto producto = buscarPorId(productoId);
+        Etiqueta etiqueta = etiquetaService.buscarPorId(etiquetaId);
+
+        producto.getEtiquetas().add(etiqueta);
+
+        return productoRepository.save(producto);
+    }
+}</code></pre>
+
+<p>
+  Los demás servicios siguen el mismo patrón, con <code>listar()</code>,
+  <code>buscarPorId(id)</code> y <code>guardar(dto)</code>.
+</p>
+
+<h2>3. DTOs</h2>
+
+<p>
+  El DTO define exactamente qué datos acepta la API. <code>ProductoRequestDTO</code>
+  recibe <code>categoriaId</code>, un entero, en lugar de un objeto
+  <code>Categoria</code> completo:
+</p>
+
+<pre><code>@Getter
+@Setter
+public class ProductoRequestDTO {
+
+    private String codigo;
+    private String nombre;
+    private BigDecimal precioVenta;
+    private Integer existencia;
+    private Integer categoriaId;
+}</code></pre>
+
+<p>
+  El controlador recibe el DTO y el servicio lo convierte en entidad. El cliente
+  nunca envía ni el <code>id</code> del producto ni la categoría completa, de modo
+  que no puede alterar campos que no le corresponden.
+</p>
+
+<h2>4. CRUD completo de productos</h2>
+
+<table>
+  <thead>
+    <tr><th>Método</th><th>Ruta</th><th>Cuerpo</th><th>Respuesta</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>GET</td><td><code>/api/productos</code></td><td>—</td><td>200 · lista</td></tr>
+    <tr><td>GET</td><td><code>/api/productos/{id}</code></td><td>—</td><td>200 · producto</td></tr>
+    <tr><td>POST</td><td><code>/api/productos</code></td><td><code>ProductoRequestDTO</code></td><td>200 · producto creado</td></tr>
+    <tr><td>PUT</td><td><code>/api/productos/{id}</code></td><td><code>ProductoRequestDTO</code></td><td>200 · producto actualizado</td></tr>
+    <tr><td>DELETE</td><td><code>/api/productos/{id}</code></td><td>—</td><td>204 · sin contenido</td></tr>
+    <tr><td>GET</td><td><code>/api/productos/categoria/{categoriaId}</code></td><td>—</td><td>200 · lista filtrada</td></tr>
+    <tr><td>POST</td><td><code>/api/productos/{id}/etiquetas/{etiquetaId}</code></td><td>—</td><td>200 · producto con etiqueta</td></tr>
+    <tr><td>DELETE</td><td><code>/api/productos/{id}/etiquetas/{etiquetaId}</code></td><td>—</td><td>200 · asociación eliminada</td></tr>
+    <tr><td>GET</td><td><code>/api/productos/etiqueta/{etiquetaId}</code></td><td>—</td><td>200 · lista por etiqueta</td></tr>
+  </tbody>
+</table>
+
+<p>Ejemplo del cuerpo enviado al crear un producto:</p>
+
+<pre><code>POST /api/productos
+
+{
+    "codigo": "TEC-001",
+    "nombre": "Teclado mecanico",
+    "precioVenta": 45.00,
+    "existencia": 15,
+    "categoriaId": 3
+}</code></pre>
+
+<h2>5. Consulta de productos por categoría</h2>
+
+<p>
+  La consulta se resuelve con un método derivado de Spring Data, sin escribir SQL:
+</p>
+
+<pre><code>public interface ProductoRepository extends JpaRepository&lt;Producto, Integer&gt; {
+
+    List&lt;Producto&gt; findByCategoriaId(Integer categoriaId);
+
+    List&lt;Producto&gt; findByEtiquetasId(Integer etiquetaId);
+}</code></pre>
+
+<p>
+  Spring Data interpreta el nombre del método y genera la consulta.
+  <code>findByCategoriaId</code> navega de <code>Producto</code> a
+  <code>Categoria</code> y compara su <code>id</code>;
+  <code>findByEtiquetasId</code> atraviesa la relación Muchos a Muchos.
+</p>
+
+<h2>6. Migración V4 y la tabla intermedia</h2>
+
+<pre><code>CREATE TABLE etiqueta (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE producto_etiqueta (
+    producto_id INTEGER NOT NULL,
+    etiqueta_id INTEGER NOT NULL,
+
+    PRIMARY KEY (producto_id, etiqueta_id),
+
+    CONSTRAINT fk_producto_etiqueta_producto
+        FOREIGN KEY (producto_id)
+        REFERENCES producto(id),
+
+    CONSTRAINT fk_producto_etiqueta_etiqueta
+        FOREIGN KEY (etiqueta_id)
+        REFERENCES etiqueta(id)
+);</code></pre>
+
+<p>Historial de migraciones en PostgreSQL:</p>
+
+<pre class="consola"><code><span class="cmd">SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank;</span>
+
+ 1 | crear tablas                 | t
+ 2 | agregar descripcion producto | t
+ 3 | crear proveedor y relacion   | t
+ 4 | crear etiquetas              | t</code></pre>
+
+<p>Estructura real de la tabla intermedia:</p>
+
+<pre class="consola"><code><span class="cmd">\d producto_etiqueta</span>
+
+   Column    |  Type   | Nullable
+-------------+---------+----------
+ producto_id | integer | not null
+ etiqueta_id | integer | not null
+
+Indexes:
+    "producto_etiqueta_pkey" PRIMARY KEY, btree (producto_id, etiqueta_id)
+Foreign-key constraints:
+    "fk_producto_etiqueta_etiqueta" FOREIGN KEY (etiqueta_id) REFERENCES etiqueta(id)
+    "fk_producto_etiqueta_producto" FOREIGN KEY (producto_id) REFERENCES producto(id)</code></pre>
+
+<p>
+  La clave primaria compuesta <code>(producto_id, etiqueta_id)</code> impide que la
+  misma etiqueta se asocie dos veces al mismo producto.
+</p>
+
+<h2>7. Entidad y repositorio Etiqueta</h2>
+
+<pre><code>@Getter
+@Setter
+@Entity
+@Table(name = "etiqueta")
+public class Etiqueta {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    private String nombre;
+}
+
+public interface EtiquetaRepository extends JpaRepository&lt;Etiqueta, Integer&gt; {
+}</code></pre>
+
+<h2>8. Relación Producto N ─ N Etiqueta</h2>
+
+<pre><code>@ManyToMany
+@JoinTable(
+        name = "producto_etiqueta",
+        joinColumns = @JoinColumn(name = "producto_id"),
+        inverseJoinColumns = @JoinColumn(name = "etiqueta_id")
+)
+private Set&lt;Etiqueta&gt; etiquetas = new HashSet&lt;&gt;();</code></pre>
+
+<p>
+  <code>@JoinTable</code> indica a JPA cuál es la tabla intermedia y qué columna
+  apunta a cada lado: <code>joinColumns</code> al lado propietario
+  (<code>Producto</code>) e <code>inverseJoinColumns</code> al lado inverso
+  (<code>Etiqueta</code>). Se usa <code>Set</code> y no <code>List</code> porque la
+  clave primaria compuesta no admite repeticiones.
+</p>
+
+<h2>9. Evidencias de la API</h2>
+
+<p>
+  Colección <code>bruno-lab1</code>, 17 peticiones en orden de ejecución, con
+  comprobaciones automáticas sobre cada respuesta.
+</p>
+
+<table>
+  <thead><tr><th>#</th><th>Petición</th><th>Cubre</th></tr></thead>
+  <tbody>
+    <tr><td>L01</td><td>GET listar productos</td><td>Lectura</td></tr>
+    <tr><td>L02</td><td>GET producto por id</td><td>Lectura</td></tr>
+    <tr><td>L03</td><td>POST crear producto con DTO</td><td>Alta mediante DTO</td></tr>
+    <tr><td>L04</td><td>PUT actualizar producto</td><td>Actualización</td></tr>
+    <tr><td>L05</td><td>GET verificar actualización</td><td>Persistencia del cambio</td></tr>
+    <tr><td>L06</td><td>GET productos por categoría</td><td>Consulta por relación</td></tr>
+    <tr><td>L07</td><td>DELETE eliminar producto</td><td>Baja · 204</td></tr>
+    <tr><td>L08</td><td>GET verificar eliminación</td><td>Baja confirmada</td></tr>
+    <tr><td>L09</td><td>POST crear etiqueta Oferta</td><td>Alta de etiqueta</td></tr>
+    <tr><td>L10</td><td>POST crear etiqueta Importado</td><td>Alta de etiqueta</td></tr>
+    <tr><td>L11</td><td>GET listar etiquetas</td><td>Lectura</td></tr>
+    <tr><td>L12</td><td>POST asociar Oferta al producto 1</td><td>Relación N─N</td></tr>
+    <tr><td>L13</td><td>POST asociar Importado al producto 1</td><td>Relación N─N</td></tr>
+    <tr><td>L14</td><td>GET producto con sus etiquetas</td><td>Relación en el JSON</td></tr>
+    <tr><td>L15</td><td>GET productos por etiqueta</td><td><strong>Reto 2</strong></td></tr>
+    <tr><td>L16</td><td>DELETE quitar asociación</td><td><strong>Reto 1</strong></td></tr>
+    <tr><td>L17</td><td>GET la etiqueta no fue borrada</td><td>Comprobación del Reto 1</td></tr>
+  </tbody>
+</table>
+
+<p>Resultado de la ejecución completa de la colección:</p>
+
+<pre class="consola"><code><span class="cmd">npx @usebruno/cli run . --env Local</span>
+
+┌───────────────┬────────────────┐
+│ Status        │     <span class="ok">✓ PASS</span>     │
+│ Requests      │ <span class="ok">17 (17 Passed)</span> │
+│ Tests         │     <span class="ok">33/33</span>      │
+└───────────────┴────────────────┘</code></pre>
+
+<h2>10. Solución del reto final</h2>
+
+<h3>Reto 1 · Eliminar la asociación Producto–Etiqueta</h3>
+
+<pre><code>@DeleteMapping("/{productoId}/etiquetas/{etiquetaId}")
+public Producto eliminarEtiqueta(@PathVariable Integer productoId,
+                                 @PathVariable Integer etiquetaId) {
+    return productoService.eliminarEtiqueta(productoId, etiquetaId);
+}</code></pre>
+
+<pre><code>public Producto eliminarEtiqueta(Integer productoId, Integer etiquetaId) {
+
+    Producto producto = buscarPorId(productoId);
+    Etiqueta etiqueta = etiquetaService.buscarPorId(etiquetaId);
+
+    producto.getEtiquetas().remove(etiqueta);
+
+    return productoRepository.save(producto);
+}</code></pre>
+
+<p>
+  El método modifica únicamente la colección <code>etiquetas</code> del producto.
+  Al guardar, Hibernate borra la fila correspondiente de
+  <code>producto_etiqueta</code>, sin tocar las tablas <code>producto</code> ni
+  <code>etiqueta</code>. La siguiente consulta lo demuestra: se asociaron dos
+  etiquetas al producto 1 y luego se eliminó la asociación con <em>Oferta</em>.
+</p>
+
+<pre class="consola"><code><span class="cmd">SELECT * FROM etiqueta ORDER BY id;</span>
+
+ id |  nombre
+----+-----------
+  1 | Oferta
+  2 | Importado
+(2 rows)
+
+<span class="cmd">SELECT pe.producto_id, p.codigo, pe.etiqueta_id, e.nombre AS etiqueta
+FROM producto_etiqueta pe
+JOIN producto p ON p.id = pe.producto_id
+JOIN etiqueta e ON e.id = pe.etiqueta_id;</span>
+
+ producto_id | codigo  | etiqueta_id | etiqueta
+-------------+---------+-------------+-----------
+           1 | LAP-001 |           2 | Importado
+(1 row)</code></pre>
+
+<p>
+  Las dos etiquetas siguen existiendo y el producto sigue existiendo; lo único que
+  desapareció es la fila que los relacionaba. Eso es exactamente lo que pedía el
+  reto.
+</p>
+
+<h3>Reto 2 · Consultar productos por etiqueta</h3>
+
+<pre><code>@GetMapping("/etiqueta/{etiquetaId}")
+public List&lt;Producto&gt; listarPorEtiqueta(@PathVariable Integer etiquetaId) {
+    return productoService.listarPorEtiqueta(etiquetaId);
+}</code></pre>
+
+<pre><code>public List&lt;Producto&gt; listarPorEtiqueta(Integer etiquetaId) {
+
+    Etiqueta etiqueta = etiquetaService.buscarPorId(etiquetaId);
+
+    return productoRepository.findByEtiquetasId(etiquetaId);
+}</code></pre>
+
+<p>
+  Se valida primero que la etiqueta exista, de modo que una etiqueta inexistente
+  produzca un error claro en lugar de una lista vacía que parecería un resultado
+  válido.
+</p>
+
+<h2>11. Comprobación de aprendizaje</h2>
+
+<ol class="preguntas">
+  <li>
+    <strong>¿Cuál es la función de una clase Service?</strong>
+    Contener la lógica de negocio de la aplicación: coordinar repositorios,
+    convertir DTOs en entidades, validar reglas y decidir qué operaciones se
+    ejecutan. Es la capa intermedia entre el controlador, que sólo atiende HTTP, y
+    el repositorio, que sólo accede a datos.
+  </li>
+  <li>
+    <strong>¿Por qué un controlador no debería contener toda la lógica de negocio?</strong>
+    Porque su responsabilidad es traducir entre HTTP y la aplicación: recibir la
+    petición, delegar y devolver una respuesta. Si además contuviera las reglas,
+    esas reglas quedarían atadas a la web y no podrían reutilizarse desde otro
+    punto de entrada, el código sería más difícil de probar y una misma lógica
+    terminaría duplicada en varios endpoints.
+  </li>
+  <li>
+    <strong>¿Qué es un DTO?</strong>
+    Un objeto de transferencia de datos: una clase simple que define exactamente
+    qué información entra o sale de la API, independiente del modelo persistente.
+    En esta práctica, <code>ProductoRequestDTO</code> describe el cuerpo que acepta
+    la creación y la actualización de productos.
+  </li>
+  <li>
+    <strong>¿Qué diferencia existe entre un DTO y una entidad JPA?</strong>
+    La entidad está anotada con <code>@Entity</code>, corresponde a una tabla y la
+    administra el contexto de persistencia de Hibernate. El DTO no se mapea a
+    ninguna tabla ni lo administra JPA: existe solamente para transportar datos.
+    Separarlos permite que el modelo de la base cambie sin alterar el contrato de
+    la API, y evita exponer campos internos.
+  </li>
+  <li>
+    <strong>¿Qué ventaja tiene recibir <code>categoriaId</code> en lugar de una entidad Categoria completa?</strong>
+    El cliente envía sólo el dato necesario y el servidor resuelve la categoría
+    real contra la base, verificando que exista. Si se recibiera la entidad
+    completa, el cliente podría enviar un nombre distinto del almacenado y
+    modificar la categoría sin querer, o enviar un identificador inexistente que
+    fallaría más tarde. Además, el cuerpo de la petición es más simple.
+  </li>
+  <li>
+    <strong>¿Qué relación representan <code>@OneToMany</code> y <code>@ManyToOne</code>?</strong>
+    Una relación Uno a Muchos vista desde cada extremo. <code>@ManyToOne</code> en
+    <code>Producto</code> indica que muchos productos pertenecen a una categoría;
+    <code>@OneToMany(mappedBy = "categoria")</code> en <code>Categoria</code>
+    expresa el mismo vínculo en sentido inverso. <code>mappedBy</code> señala que
+    el lado propietario es <code>Producto</code>.
+  </li>
+  <li>
+    <strong>¿Dónde se almacena la clave foránea en la relación Categoria–Producto?</strong>
+    En la tabla <code>producto</code>, en la columna <code>categoria_id</code>, que
+    referencia <code>categoria(id)</code>. La clave foránea siempre reside en el
+    lado "muchos", que es el lado propietario de la relación.
+  </li>
+  <li>
+    <strong>¿Qué representa <code>@ManyToMany</code>?</strong>
+    Una relación de muchos a muchos: un producto puede tener varias etiquetas y una
+    etiqueta puede aplicarse a varios productos. Ninguna de las dos tablas puede
+    guardar la referencia por sí sola, por lo que la relación se materializa en una
+    tabla intermedia.
+  </li>
+  <li>
+    <strong>¿Cuál es la función de <code>@JoinTable</code>?</strong>
+    Describir esa tabla intermedia: su nombre y las columnas que apuntan a cada
+    lado. <code>joinColumns</code> define la columna de la entidad propietaria
+    (<code>producto_id</code>) e <code>inverseJoinColumns</code> la del otro extremo
+    (<code>etiqueta_id</code>).
+  </li>
+  <li>
+    <strong>¿Por qué se necesita la tabla <code>producto_etiqueta</code>?</strong>
+    Porque en una relación Muchos a Muchos una columna no basta: un producto
+    tendría que guardar varias etiquetas y cada etiqueta varios productos, y una
+    columna almacena un solo valor. La tabla intermedia guarda un par
+    <code>(producto_id, etiqueta_id)</code> por cada asociación, y su clave primaria
+    compuesta impide duplicados.
+  </li>
+  <li>
+    <strong>¿Qué responsabilidad corresponde al Repository?</strong>
+    Únicamente el acceso a datos: guardar, buscar, eliminar y ejecutar consultas.
+    Al extender <code>JpaRepository</code> hereda las operaciones básicas, y los
+    métodos derivados como <code>findByCategoriaId</code> se generan a partir de su
+    nombre. No contiene reglas de negocio.
+  </li>
+  <li>
+    <strong>Explique el flujo: Cliente → Controller → Service → Repository → PostgreSQL.</strong>
+    El cliente envía una petición HTTP, por ejemplo
+    <code>POST /api/productos</code> con un JSON. El <strong>Controller</strong> la
+    recibe, Spring convierte el cuerpo en un <code>ProductoRequestDTO</code> y
+    delega en el servicio. El <strong>Service</strong> aplica la lógica: busca la
+    categoría por su identificador, construye la entidad <code>Producto</code> y la
+    envía a guardar. El <strong>Repository</strong> traduce esa operación mediante
+    Hibernate a una sentencia SQL. <strong>PostgreSQL</strong> la ejecuta y
+    devuelve la fila. El resultado regresa por el mismo camino hasta convertirse en
+    la respuesta JSON que recibe el cliente.
+  </li>
+</ol>
+
+<h2>12. Conclusión</h2>
+
+<p>
+  El laboratorio permitió reorganizar la API en capas con responsabilidades
+  separadas. Los controladores quedaron reducidos a atender HTTP, los servicios
+  concentran la lógica de negocio y los repositorios se limitan al acceso a datos,
+  de modo que cada clase tiene una sola razón para cambiar. Los DTOs definieron el
+  contrato de entrada de la API y evitaron exponer las entidades directamente,
+  además de simplificar el cuerpo de las peticiones al recibir
+  <code>categoriaId</code> en lugar de una categoría completa. El CRUD de productos
+  quedó completo y las consultas por relación se resolvieron con métodos derivados
+  de Spring Data, sin escribir SQL. La relación Muchos a Muchos entre
+  <code>Producto</code> y <code>Etiqueta</code> se implementó con
+  <code>@ManyToMany</code> y <code>@JoinTable</code> sobre la tabla intermedia
+  creada en la migración V4. Los dos retos finales confirmaron el comportamiento
+  esperado: eliminar una asociación borra únicamente la fila de
+  <code>producto_etiqueta</code>, y la consulta por etiqueta atraviesa correctamente
+  la relación. Las 17 peticiones de la colección se ejecutan sin errores, con 33
+  comprobaciones automáticas satisfactorias.
+</p>
+
+</body>
+</html>

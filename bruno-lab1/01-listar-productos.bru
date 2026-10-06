@@ -1,0 +1,16 @@
+meta {
+  name: L01 GET listar productos
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/productos
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("Devuelve una lista", function () { expect(res.getBody()).to.be.an("array"); });
+}

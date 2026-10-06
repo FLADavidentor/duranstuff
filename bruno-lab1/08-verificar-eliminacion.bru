@@ -1,0 +1,16 @@
+meta {
+  name: L08 GET verificar eliminacion
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/productos
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("TEC-001 ya no existe", function () { expect(res.getBody().some(p => p.codigo === "TEC-001")).to.equal(false); });
+}

@@ -1,0 +1,15 @@
+meta {
+  name: L07 DELETE eliminar producto
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/api/productos/{{nuevoProductoId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 204 sin contenido", function () { expect(res.getStatus()).to.equal(204); });
+}

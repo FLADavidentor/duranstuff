@@ -1,0 +1,16 @@
+meta {
+  name: L05 GET verificar actualizacion
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/productos/{{nuevoProductoId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("HTTP 200", function () { expect(res.getStatus()).to.equal(200); });
+  test("El cambio quedo persistido", function () { expect(res.getBody().existencia).to.equal(8); });
+}

@@ -1,14 +1,25 @@
 package ni.edu.uam.gestion_productos.entity;
 
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.math.BigDecimal;
+import lombok.Getter;
+import lombok.Setter;
+
+
+@Getter
+@Setter
 
 @Entity
 @Table(name = "producto")
@@ -100,4 +111,14 @@ public class Producto {
     public void setProveedor(Proveedor proveedor) {
         this.proveedor = proveedor;
     }
+
+    @ManyToMany
+    @JoinTable(
+            name = "producto_etiqueta",
+            joinColumns
+            = @JoinColumn(name = "producto_id"),
+            inverseJoinColumns
+            = @JoinColumn(name = "etiqueta_id")
+    )
+    private final Set<Etiqueta> etiquetas = new HashSet<>();
 }
