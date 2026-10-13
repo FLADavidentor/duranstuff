@@ -36,10 +36,14 @@
   .c403 { color: var(--falla); font-weight: 600; }
   .nota { border-left: 3px solid var(--acento); background: var(--panel); padding: 12px 16px; margin: 0 0 20px; font-size: 0.93rem; }
   .alerta { border-left: 3px solid var(--falla); background: #fff5f5; padding: 12px 16px; margin: 0 0 20px; font-size: 0.93rem; }
+  figure { margin: 0 0 26px; }
+  figure img { width: 100%; display: block; border: 1px solid var(--linea); border-radius: 4px; }
+  figcaption { font-size: 0.86rem; color: var(--suave); margin-top: 7px; line-height: 1.5; }
+  figcaption b { color: var(--tinta); }
   ol.preguntas { padding-left: 24px; }
   ol.preguntas > li { margin-bottom: 20px; }
   ol.preguntas > li > strong { display: block; margin-bottom: 4px; }
-  @media print { body { padding: 0; max-width: none; font-size: 11pt; } h2 { page-break-after: avoid; } pre, table { page-break-inside: avoid; } }
+  @media print { body { padding: 0; max-width: none; font-size: 11pt; } h2 { page-break-after: avoid; } pre, table, figure { page-break-inside: avoid; } }
 </style>
 </head>
 <body>
@@ -254,6 +258,61 @@ roles.setAuthorityPrefix("ROLE_");</code></pre>
     </tr>
   </tbody>
 </table>
+
+<p>
+  Las capturas siguientes corresponden una a una a las filas de la tabla
+  anterior. Todas se tomaron sobre la colección <code>bruno-seguridad</code> con
+  el entorno <strong>Local</strong> y la aplicación escuchando en
+  <code>http://localhost:8080</code>. La cabecera <code>Authorization</code>
+  aparece como la variable <code>{{tokenUser}}</code> o <code>{{tokenAdmin}}</code>,
+  de modo que ningún token vigente queda expuesto en este documento.
+</p>
+
+<figure>
+  <img src="capturas/reto-1-sin-token-401.png" alt="GET /api/categorias sin token devuelve 401 Unauthorized">
+  <figcaption>
+    <b>Evidencia 1 — 401 Unauthorized.</b> <code>GET /api/categorias</code> sin
+    cabecera <code>Authorization</code>. El filtro de recurso rechaza la petición
+    antes de evaluar roles, por eso el cuerpo viene vacío.
+  </figcaption>
+</figure>
+
+<figure>
+  <img src="capturas/reto-2-user-get-200.png" alt="GET /api/categorias con token USER devuelve 200 OK">
+  <figcaption>
+    <b>Evidencia 2 — 200 OK.</b> El mismo <code>GET</code> con el token de
+    <code>operador</code> (rol <code>USER</code>) sí devuelve el listado, porque la
+    regla de lectura admite <code>USER</code> y <code>ADMIN</code>.
+  </figcaption>
+</figure>
+
+<figure>
+  <img src="capturas/reto-3-user-post-403.png" alt="POST /api/categorias con token USER devuelve 403 Forbidden">
+  <figcaption>
+    <b>Evidencia 3 — 403 Forbidden.</b> <code>POST /api/categorias</code> con el
+    mismo token <code>USER</code>. El servidor sabe quién es: lo que falta es el
+    rol <code>ADMIN</code>. Aquí se ve la diferencia entre 401 y 403.
+  </figcaption>
+</figure>
+
+<figure>
+  <img src="capturas/reto-4-user-put-403.png" alt="PUT /api/categorias/{id} con token USER devuelve 403 Forbidden">
+  <figcaption>
+    <b>Evidencia 4 — 403 Forbidden.</b> <code>PUT /api/categorias/{{categoriaSeguridadId}}</code>
+    con token <code>USER</code>. <code>PUT</code> no es <code>GET</code>, así que
+    cae en la regla que exige <code>ADMIN</code>.
+  </figcaption>
+</figure>
+
+<figure>
+  <img src="capturas/reto-5-admin-put-200.png" alt="PUT /api/categorias/{id} con token ADMIN devuelve 200 OK">
+  <figcaption>
+    <b>Evidencia 5 — 200 OK.</b> El mismo <code>PUT</code> con el token de
+    <code>admin</code>. La respuesta devuelve la categoría ya modificada
+    (<code>"nombre": "Categoria de seguridad editada"</code>), lo que confirma que
+    el cambio se aplicó en la base de datos.
+  </figcaption>
+</figure>
 
 <h3>Reto opcional: <code>GET /api/auth/perfil</code></h3>
 

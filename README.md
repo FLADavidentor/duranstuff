@@ -98,3 +98,6 @@ npx @usebruno/cli run . --env Local
 - `Entrega-Seguridad.html`
 
 Ábralos en un navegador.
+
+Las cinco evidencias del reto final de la semana 9 están en `capturas/` y se
+muestran incrustadas dentro de `Entrega-Seguridad.html`.
