@@ -1,0 +1,19 @@
+meta {
+  name: S19 DELETE categoria token ADMIN - limpieza
+  type: http
+  seq: 19
+}
+
+delete {
+  url: {{baseUrl}}/api/categorias/{{categoriaSeguridadId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenAdmin}}
+}
+
+tests {
+  test("204 No Content: ADMIN si puede eliminar", function () { expect(res.getStatus()).to.equal(204); });
+}

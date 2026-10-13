@@ -1,0 +1,27 @@
+meta {
+  name: S15 PUT categoria token ADMIN - RETO
+  type: http
+  seq: 15
+}
+
+put {
+  url: {{baseUrl}}/api/categorias/{{categoriaSeguridadId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombre": "Categoria de seguridad editada",
+    "activa": true
+  }
+}
+
+tests {
+  test("200 OK: ADMIN si puede actualizar", function () { expect(res.getStatus()).to.equal(200); });
+  test("El cambio se aplico", function () { expect(res.getBody().nombre).to.equal("Categoria de seguridad editada"); });
+}

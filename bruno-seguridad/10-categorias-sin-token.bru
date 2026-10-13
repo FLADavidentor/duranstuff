@@ -1,0 +1,15 @@
+meta {
+  name: S10 GET categorias sin token - RETO
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/categorias
+  body: none
+  auth: none
+}
+
+tests {
+  test("401 Unauthorized: recurso protegido sin identificacion", function () { expect(res.getStatus()).to.equal(401); });
+}

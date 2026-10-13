@@ -1,0 +1,19 @@
+meta {
+  name: S11 GET categorias token USER - RETO
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/categorias
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenUser}}
+}
+
+tests {
+  test("200 OK: USER puede consultar categorias", function () { expect(res.getStatus()).to.equal(200); });
+}

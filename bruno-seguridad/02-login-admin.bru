@@ -1,0 +1,27 @@
+meta {
+  name: S02 POST login ADMIN correcto
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "admin",
+    "password": "Admin123!"
+  }
+}
+
+script:post-response {
+  bru.setVar("tokenAdmin", res.getBody().token);
+}
+
+tests {
+  test("200 OK", function () { expect(res.getStatus()).to.equal(200); });
+  test("Devuelve un JWT de tipo Bearer", function () { expect(res.getBody().type).to.equal("Bearer"); expect(res.getBody().token.split(".")).to.have.lengthOf(3); });
+}

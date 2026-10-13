@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seguridad con Spring Security y JWT</title>
+<style>
+  :root {
+    --tinta: #1a1a1a; --suave: #5a5f66; --linea: #d8dce2; --fondo: #ffffff;
+    --panel: #f6f7f9; --codigo: #f2f4f7; --acento: #1d4ed8; --exito: #0f7a3d; --falla: #b3261e; --aviso: #9a6700;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0 auto; padding: 48px 24px 96px; max-width: 880px;
+         font: 16px/1.65 "Segoe UI", system-ui, sans-serif; color: var(--tinta); background: var(--fondo); }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 4px; }
+  h2 { font-size: 1.3rem; margin: 56px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--linea); }
+  h3 { font-size: 1.05rem; margin: 32px 0 10px; }
+  p, li { margin: 0 0 12px; }
+  code, pre { font-family: Consolas, "Cascadia Mono", monospace; }
+  code { background: var(--codigo); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: var(--codigo); border: 1px solid var(--linea); border-left: 3px solid var(--acento);
+        padding: 14px 16px; overflow-x: auto; border-radius: 4px; font-size: 0.84rem; line-height: 1.5; margin: 0 0 16px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  pre.consola { background: #1e1e1e; color: #e6e6e6; border: 1px solid #3a3a3a; border-left: 3px solid var(--exito); }
+  pre.consola .ok { color: #8bd98b; font-weight: 600; }
+  pre.consola .cmd { color: #6fb3ff; }
+  .portada { border: 1px solid var(--linea); border-radius: 6px; padding: 28px 32px; background: var(--panel); margin-bottom: 8px; }
+  .portada dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 20px; margin: 20px 0 0; }
+  .portada dt { color: var(--suave); }
+  .portada dd { margin: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 0 0 20px; font-size: 0.9rem; }
+  th, td { border: 1px solid var(--linea); padding: 8px 11px; text-align: left; vertical-align: top; }
+  th { background: var(--panel); font-weight: 600; }
+  .c200 { color: var(--exito); font-weight: 600; }
+  .c401 { color: var(--aviso); font-weight: 600; }
+  .c403 { color: var(--falla); font-weight: 600; }
+  .nota { border-left: 3px solid var(--acento); background: var(--panel); padding: 12px 16px; margin: 0 0 20px; font-size: 0.93rem; }
+  .alerta { border-left: 3px solid var(--falla); background: #fff5f5; padding: 12px 16px; margin: 0 0 20px; font-size: 0.93rem; }
+  ol.preguntas { padding-left: 24px; }
+  ol.preguntas > li { margin-bottom: 20px; }
+  ol.preguntas > li > strong { display: block; margin-bottom: 4px; }
+  @media print { body { padding: 0; max-width: none; font-size: 11pt; } h2 { page-break-after: avoid; } pre, table { page-break-inside: avoid; } }
+</style>
+</head>
+<body>
+
+<div class="portada">
+  <h1>Seguridad con Spring Security y JWT</h1>
+  <p style="color:var(--suave); margin:0">Práctica guiada n.º 9 · Documento de entrega</p>
+  <dl>
+    <dt>Asignatura</dt><dd>Servicios Web</dd>
+    <dt>Docente</dt><dd>José A. Durán García</dd>
+    <dt>Caso</dt><dd>Comercial NicaMarket, S. A.</dd>
+    <dt>Estudiante</dt><dd>Davide Andres Patiño Rossanino</dd>
+    <dt>Carné</dt><dd>22021331</dd>
+    <dt>Proyecto</dt><dd><code>gestion-productos</code> · paquete <code>ni.edu.uam.gestion_productos</code></dd>
+    <dt>Rama</dt><dd><code>semana9</code></dd>
+  </dl>
+</div>
+
+<div class="alerta">
+  <strong>Sobre el secreto.</strong> La clave de firma HS256 no se encuentra en
+  este documento ni en el repositorio. Se lee de la variable de entorno
+  <code>JWT_SECRET_BASE64</code> y la aplicación se niega a iniciar si falta o si
+  tiene menos de 32 bytes. Tampoco se incluye ningún token vigente: los tokens de
+  las pruebas vencen a los 30 minutos y se generan en cada ejecución.
+</div>
+
+<h2>1. Dependencias agregadas</h2>
+
+<pre><code>&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-boot-starter-security&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-boot-starter-oauth2-resource-server&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+
+<p>
+  Se insertaron dentro del bloque <code>&lt;dependencies&gt;</code> existente,
+  conservando Web, JPA, Flyway y el controlador de PostgreSQL. El CRUD previo no
+  se modificó salvo para completar las operaciones de categorías que exige el
+  reto final.
+</p>
+
+<h2>2. Organización de archivos</h2>
+
+<p>
+  La guía propone el paquete <code>com.example.factura</code>; este proyecto usa
+  <code>ni.edu.uam.gestion_productos</code>, y las carpetas existentes se llaman
+  <code>controller</code> y <code>service</code>, en singular. Se respetó la
+  convención del proyecto, como indica la propia guía.
+</p>
+
+<pre><code>ni/edu/uam/gestion_productos/
+├── config/SecurityConfig.java        (nuevo)
+├── controller/AuthController.java    (nuevo)
+├── controller/PublicoController.java (nuevo)
+├── dto/LoginRequest.java             (nuevo)
+├── dto/LoginResponse.java            (nuevo)
+├── service/TokenService.java         (nuevo)
+├── controller/ProductoController.java   (ya existía)
+└── controller/CategoriaController.java  (ya existía)</code></pre>
+
+<h2>3. Configuración del secreto</h2>
+
+<p>
+  El secreto se genera con 32 bytes aleatorios codificados en Base64 y se
+  configura como variable de entorno en la configuración de ejecución de IntelliJ.
+  La validación ocurre al construir el <code>SecretKey</code>:
+</p>
+
+<pre><code>@Bean
+SecretKey jwtSecretKey() {
+
+    String base64 = System.getenv("JWT_SECRET_BASE64");
+
+    if (base64 == null || base64.isBlank()) {
+        throw new IllegalStateException(
+                "Configure la variable de entorno JWT_SECRET_BASE64");
+    }
+
+    byte[] clave = Base64.getDecoder().decode(base64);
+
+    if (clave.length &lt; 32) {
+        throw new IllegalStateException(
+                "La clave HS256 debe tener al menos 32 bytes");
+    }
+
+    return new SecretKeySpec(clave, "HmacSHA256");
+}</code></pre>
+
+<h2>4. Cadena de filtros y reglas de acceso</h2>
+
+<pre><code>return http
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/login", "/api/publico/**")
+                        .permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/productos/**")
+                        .hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/api/productos/**")
+                        .hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/categorias/**")
+                        .hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/api/categorias/**")
+                        .hasRole("ADMIN")
+                .anyRequest().authenticated())
+        .oauth2ResourceServer(oauth -> oauth.jwt(jwt ->
+                jwt.jwtAuthenticationConverter(converter)))
+        .build();</code></pre>
+
+<p>
+  <code>STATELESS</code> impide que se cree una sesión HTTP: cada petición debe
+  traer su token. El orden importa, porque gana la primera regla que coincide: la
+  regla de <code>GET</code> aparece antes que la general, de modo que una consulta
+  la puede hacer <code>USER</code>, mientras que cualquier otro método sobre la
+  misma ruta exige <code>ADMIN</code>.
+</p>
+
+<div class="nota">
+  <strong>Decisión sobre <code>/api/auth</code>.</strong> La guía propone
+  <code>permitAll()</code> sobre <code>/api/auth/**</code>. Aquí se abrió
+  únicamente <code>/api/auth/login</code>, porque el reto opcional exige que
+  <code>/api/auth/perfil</code> rechace solicitudes anónimas; con el comodín
+  habría quedado público.
+</div>
+
+<h3>Conversión del claim <code>roles</code></h3>
+
+<pre><code>JwtGrantedAuthoritiesConverter roles = new JwtGrantedAuthoritiesConverter();
+roles.setAuthoritiesClaimName("roles");
+roles.setAuthorityPrefix("ROLE_");</code></pre>
+
+<p>
+  El token lleva <code>"roles": ["ADMIN"]</code>. El conversor antepone
+  <code>ROLE_</code> para producir la autoridad <code>ROLE_ADMIN</code>, que es la
+  que evalúa <code>hasRole("ADMIN")</code>.
+</p>
+
+<h2>5. Emisión del token</h2>
+
+<pre><code>JwtClaimsSet claims = JwtClaimsSet.builder()
+        .issuer("nicamarket-laboratorio")
+        .issuedAt(ahora)
+        .expiresAt(ahora.plus(30, ChronoUnit.MINUTES))
+        .subject(auth.getName())
+        .claim("roles", roles)
+        .build();</code></pre>
+
+<p>
+  <code>AuthController</code> delega en el <code>AuthenticationManager</code>, que
+  verifica usuario y contraseña contra los usuarios en memoria usando BCrypt. Sólo
+  si la autenticación es correcta se emite el token.
+</p>
+
+<h2>6. Evidencias: tabla de pruebas de la guía</h2>
+
+<table>
+  <thead>
+    <tr><th>#</th><th>Solicitud</th><th>Token</th><th>Resultado</th><th>Por qué</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>GET /api/publico/saludo</td><td>Sin token</td><td class="c200">200</td><td>La ruta está en <code>permitAll()</code>.</td></tr>
+    <tr><td>2</td><td>POST /api/auth/login</td><td>Credenciales válidas</td><td class="c200">200 + JWT</td><td>BCrypt valida la contraseña y se firma el token.</td></tr>
+    <tr><td>3</td><td>POST /api/auth/login</td><td>Contraseña incorrecta</td><td class="c401">401</td><td>Falla la autenticación: no se sabe quién es.</td></tr>
+    <tr><td>4</td><td>GET /api/productos</td><td>Sin token</td><td class="c401">401</td><td>Recurso protegido sin credencial alguna.</td></tr>
+    <tr><td>5</td><td>GET /api/productos</td><td>USER</td><td class="c200">200</td><td>La consulta admite <code>USER</code> o <code>ADMIN</code>.</td></tr>
+    <tr><td>6</td><td>POST /api/productos</td><td>USER</td><td class="c403">403</td><td>Se sabe quién es, pero su rol no alcanza.</td></tr>
+    <tr><td>7</td><td>GET /api/productos</td><td>Token modificado</td><td class="c401">401</td><td>La firma HMAC no coincide: el token se rechaza.</td></tr>
+    <tr><td>8</td><td>POST /api/productos</td><td>ADMIN</td><td class="c200">200</td><td>Rol suficiente y datos válidos; el producto se crea.</td></tr>
+  </tbody>
+</table>
+
+<h2>7. Reto final: protección de categorías</h2>
+
+<p>
+  Para que el reto fuera verificable se completó el CRUD de categorías, que sólo
+  tenía <code>GET</code> y <code>POST</code>: se agregaron <code>PUT</code> y
+  <code>DELETE</code> en <code>CategoriaController</code> y
+  <code>CategoriaService</code>. Sin ellos no era posible comprobar que
+  <code>ADMIN</code> puede editar y eliminar.
+</p>
+
+<p>Las cinco evidencias solicitadas, con su explicación:</p>
+
+<table>
+  <thead>
+    <tr><th>#</th><th>Solicitud</th><th>Token</th><th>Resultado</th><th>Por qué se obtuvo ese código</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td><td>GET /api/categorias</td><td>Sin token</td><td class="c401">401</td>
+      <td>No hay cabecera <code>Authorization</code>. El recurso exige identificación antes de evaluar cualquier permiso.</td>
+    </tr>
+    <tr>
+      <td>2</td><td>GET /api/categorias</td><td>USER</td><td class="c200">200</td>
+      <td>La regla de <code>GET</code> admite <code>USER</code> y <code>ADMIN</code>: el operador puede consultar.</td>
+    </tr>
+    <tr>
+      <td>3</td><td>POST /api/categorias</td><td>USER</td><td class="c403">403</td>
+      <td>El token es válido y la identidad es conocida, pero la regla general exige <code>ADMIN</code>. Es autorización, no autenticación.</td>
+    </tr>
+    <tr>
+      <td>4</td><td>PUT /api/categorias/{id}</td><td>USER</td><td class="c403">403</td>
+      <td>Igual que el anterior: <code>PUT</code> no es <code>GET</code>, por lo que cae en la regla de <code>ADMIN</code>.</td>
+    </tr>
+    <tr>
+      <td>5</td><td>PUT /api/categorias/{id}</td><td>ADMIN</td><td class="c200">200</td>
+      <td>Rol suficiente y cuerpo válido: la categoría se actualiza y se devuelve con el nombre modificado.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Reto opcional: <code>GET /api/auth/perfil</code></h3>
+
+<pre><code>@GetMapping("/perfil")
+public Map&lt;String, Object&gt; perfil(Authentication auth) {
+
+    List&lt;String&gt; roles = auth.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .filter(a -> a.startsWith("ROLE_"))
+            .map(a -> a.substring(5))
+            .toList();
+
+    return Map.of("usuario", auth.getName(), "roles", roles);
+}</code></pre>
+
+<p>
+  Sin token devuelve <strong>401</strong>; con un token válido devuelve el
+  <code>subject</code> y los roles leídos del JWT:
+</p>
+
+<pre class="consola"><code>{"usuario":"admin","roles":["ADMIN"]}</code></pre>
+
+<h2>8. Ejecución completa de la colección</h2>
+
+<p>
+  Colección <code>bruno-seguridad</code>: 20 peticiones que cubren la tabla de la
+  guía, el reto final y el reto opcional, y que terminan eliminando los registros
+  creados para poder repetirse.
+</p>
+
+<pre class="consola"><code><span class="cmd">npx @usebruno/cli run . --env Local</span>
+
+┌───────────────┬────────────────┐
+│ Status        │     <span class="ok">✓ PASS</span>     │
+│ Requests      │ <span class="ok">20 (20 Passed)</span> │
+│ Tests         │     <span class="ok">26/26</span>      │
+└───────────────┴────────────────┘</code></pre>
+
+<p>
+  Cada petición comprueba el código HTTP exacto que se espera, de modo que la
+  evidencia es reproducible: basta ejecutar la colección con la aplicación
+  iniciada.
+</p>
+
+<h2>9. Preguntas de cierre</h2>
+
+<ol class="preguntas">
+  <li>
+    <strong>¿En qué se diferencian HTTP 401 y 403?</strong>
+    <strong>401 Unauthorized</strong> significa que el servidor no sabe quién es
+    el solicitante: falta la credencial o no es válida. Es un problema de
+    <em>autenticación</em>, y reintentar con credenciales correctas puede
+    resolverlo. <strong>403 Forbidden</strong> significa que el servidor sí sabe
+    quién es, pero esa identidad no tiene permiso para la operación. Es un problema
+    de <em>autorización</em>, y repetir la petición con el mismo token siempre dará
+    el mismo resultado. En esta práctica, consultar productos sin token devuelve
+    401, mientras que crear un producto con el token de <code>operador</code>
+    devuelve 403.
+  </li>
+  <li>
+    <strong>¿Por qué no basta con leer el contenido de un JWT para confiar en él?</strong>
+    Porque las dos primeras partes del token son solamente Base64URL, no cifrado:
+    cualquiera puede decodificarlas y también modificarlas, por ejemplo cambiando
+    <code>"roles": ["USER"]</code> por <code>["ADMIN"]</code>. Lo que da confianza
+    es la tercera parte, la firma, calculada con la clave secreta. Sólo quien posee
+    esa clave puede generar una firma válida, y el servidor la recalcula en cada
+    petición. Por eso la prueba 7 devuelve 401: el contenido parecía correcto, pero
+    la firma dejó de coincidir al alterar el token.
+  </li>
+  <li>
+    <strong>¿Qué función cumple <code>JwtDecoder</code>?</strong>
+    Recibir el token que llega en la cabecera <code>Authorization</code> y
+    validarlo antes de que la petición alcance cualquier controlador. Verifica la
+    firma con la clave secreta y el algoritmo declarado (HS256), comprueba que no
+    haya vencido según <code>expiresAt</code> y expone los claims ya validados. Si
+    algo falla, la petición se rechaza con 401 y nunca llega a la lógica de
+    negocio.
+  </li>
+  <li>
+    <strong>¿Qué riesgos ocasionaría publicar la clave utilizada para firmar tokens?</strong>
+    Con HS256 la misma clave firma y verifica, de modo que quien la obtenga puede
+    fabricar tokens válidos para cualquier usuario y cualquier rol, sin conocer
+    ninguna contraseña. Podría emitirse un token de <code>ADMIN</code> y acceder a
+    todas las operaciones protegidas; el servidor lo aceptaría porque la firma sería
+    legítima. Además, como los tokens no se consultan contra una base, no hay forma
+    de revocarlos uno a uno: habría que rotar la clave, lo que invalida de golpe
+    todos los tokens emitidos. Por eso la clave se mantiene fuera del repositorio,
+    en una variable de entorno.
+  </li>
+</ol>
+
+<h2>10. Observaciones</h2>
+
+<p>
+  La guía está escrita para Spring Boot 3.x con Spring Security 6.x. Este proyecto
+  usa <strong>Spring Boot 4.1.1</strong> con Spring Security 7, y el código de la
+  guía compiló y funcionó sin cambios de API. La única corrección necesaria fue en
+  el endpoint de perfil: Spring Security 7 agrega la autoridad técnica
+  <code>FACTOR_BEARER</code> junto a los roles, por lo que se filtran únicamente
+  las autoridades que empiezan con <code>ROLE_</code> antes de responder.
+</p>
+
+<p>
+  Tal como advierte la nota docente, en esta práctica la misma aplicación emite y
+  valida los tokens para simplificar el laboratorio. En un sistema real convendría
+  separar el emisor del validador, administrar la clave con un gestor de secretos,
+  validar emisor y audiencia, y exponer la API únicamente sobre HTTPS. La
+  desactivación de CSRF es admisible aquí porque la API no usa sesiones ni cookies:
+  la credencial viaja en la cabecera <code>Authorization</code>, que un sitio
+  externo no puede adjuntar automáticamente.
+</p>
+
+</body>
+</html>

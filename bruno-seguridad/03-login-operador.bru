@@ -1,0 +1,28 @@
+meta {
+  name: S03 POST login USER correcto
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "operador",
+    "password": "Operador123!"
+  }
+}
+
+script:post-response {
+  bru.setVar("tokenUser", res.getBody().token);
+  bru.setVar("tokenFalso", res.getBody().token.slice(0, -6) + "XXXXXX");
+}
+
+tests {
+  test("200 OK", function () { expect(res.getStatus()).to.equal(200); });
+  test("Devuelve un JWT", function () { expect(res.getBody().token.split(".")).to.have.lengthOf(3); });
+}

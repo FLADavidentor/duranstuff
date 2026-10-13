@@ -1,0 +1,15 @@
+meta {
+  name: S05 GET productos sin token
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/productos
+  body: none
+  auth: none
+}
+
+tests {
+  test("401 Unauthorized: falta identificarse", function () { expect(res.getStatus()).to.equal(401); });
+}

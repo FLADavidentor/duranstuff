@@ -1,0 +1,19 @@
+meta {
+  name: S20 DELETE producto token ADMIN - limpieza
+  type: http
+  seq: 20
+}
+
+delete {
+  url: {{baseUrl}}/api/productos/{{productoSeguridadId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenAdmin}}
+}
+
+tests {
+  test("204 No Content", function () { expect(res.getStatus()).to.equal(204); });
+}

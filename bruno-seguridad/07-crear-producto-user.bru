@@ -1,0 +1,29 @@
+meta {
+  name: S07 POST producto con token USER
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/productos
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenUser}}
+}
+
+body:json {
+  {
+    "codigo": "SEG-999",
+    "nombre": "No deberia crearse",
+    "precioVenta": 10.00,
+    "existencia": 1,
+    "categoriaId": 1
+  }
+}
+
+tests {
+  test("403 Forbidden: identificado pero sin permiso", function () { expect(res.getStatus()).to.equal(403); });
+}

@@ -1,0 +1,22 @@
+meta {
+  name: S04 POST login password incorrecta
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "admin",
+    "password": "incorrecta"
+  }
+}
+
+tests {
+  test("401 Unauthorized: la autenticacion fallo", function () { expect(res.getStatus()).to.equal(401); });
+}

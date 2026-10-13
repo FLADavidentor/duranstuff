@@ -1,0 +1,19 @@
+meta {
+  name: S06 GET productos con token USER
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/productos
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenUser}}
+}
+
+tests {
+  test("200 OK: USER puede consultar", function () { expect(res.getStatus()).to.equal(200); });
+}

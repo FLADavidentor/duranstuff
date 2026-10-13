@@ -1,0 +1,30 @@
+meta {
+  name: S13 POST categoria token ADMIN - RETO
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/api/categorias
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "nombre": "Categoria de seguridad",
+    "activa": true
+  }
+}
+
+script:post-response {
+  bru.setVar("categoriaSeguridadId", res.getBody().id);
+}
+
+tests {
+  test("200 OK: ADMIN si puede crear", function () { expect(res.getStatus()).to.equal(200); });
+}

@@ -1,0 +1,34 @@
+meta {
+  name: S09 POST producto con token ADMIN
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/productos
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenAdmin}}
+}
+
+body:json {
+  {
+    "codigo": "SEG-001",
+    "nombre": "Producto creado por ADMIN",
+    "precioVenta": 99.00,
+    "existencia": 5,
+    "categoriaId": 1
+  }
+}
+
+script:post-response {
+  bru.setVar("productoSeguridadId", res.getBody().id);
+}
+
+tests {
+  test("200 OK: ADMIN si puede crear", function () { expect(res.getStatus()).to.equal(200); });
+  test("El producto se guardo", function () { expect(res.getBody().codigo).to.equal("SEG-001"); });
+}

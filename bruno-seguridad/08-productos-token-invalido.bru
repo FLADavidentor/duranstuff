@@ -1,0 +1,19 @@
+meta {
+  name: S08 GET productos con token modificado
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/productos
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenFalso}}
+}
+
+tests {
+  test("401 Unauthorized: la firma no coincide", function () { expect(res.getStatus()).to.equal(401); });
+}

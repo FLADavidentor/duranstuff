@@ -1,0 +1,26 @@
+meta {
+  name: S14 PUT categoria token USER - RETO
+  type: http
+  seq: 14
+}
+
+put {
+  url: {{baseUrl}}/api/categorias/{{categoriaSeguridadId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenUser}}
+}
+
+body:json {
+  {
+    "nombre": "Modificada por USER",
+    "activa": false
+  }
+}
+
+tests {
+  test("403 Forbidden: USER no puede actualizar", function () { expect(res.getStatus()).to.equal(403); });
+}

@@ -36,4 +36,18 @@ public class CategoriaService {
 
         return categoriaRepository.save(categoria);
     }
+
+    public Categoria actualizar(Integer id, CategoriaRequestDTO dto) {
+
+        Categoria categoria = buscarPorId(id);
+
+        categoria.setNombre(dto.getNombre());
+        categoria.setActiva(dto.isActiva());
+
+        return categoriaRepository.save(categoria);
+    }
+
+    public void eliminar(Integer id) {
+        categoriaRepository.deleteById(id);
+    }
 }

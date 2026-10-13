@@ -1,0 +1,15 @@
+meta {
+  name: S17 GET perfil sin token - RETO OPCIONAL
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/api/auth/perfil
+  body: none
+  auth: none
+}
+
+tests {
+  test("401 Unauthorized: no acepta solicitudes anonimas", function () { expect(res.getStatus()).to.equal(401); });
+}

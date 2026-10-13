@@ -1,0 +1,16 @@
+meta {
+  name: S01 GET saludo publico sin token
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/publico/saludo
+  body: none
+  auth: none
+}
+
+tests {
+  test("200 OK sin autenticacion", function () { expect(res.getStatus()).to.equal(200); });
+  test("Responde el mensaje publico", function () { expect(res.getBody().mensaje).to.be.a("string"); });
+}

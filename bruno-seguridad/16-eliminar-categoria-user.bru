@@ -1,0 +1,19 @@
+meta {
+  name: S16 DELETE categoria token USER - RETO
+  type: http
+  seq: 16
+}
+
+delete {
+  url: {{baseUrl}}/api/categorias/{{categoriaSeguridadId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{tokenUser}}
+}
+
+tests {
+  test("403 Forbidden: USER no puede eliminar", function () { expect(res.getStatus()).to.equal(403); });
+}
